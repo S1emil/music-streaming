@@ -1,0 +1,13 @@
+{
+  "name": "music-streaming",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node start.js",
+    "backend": "cd backend && npm run dev",
+    "frontend": "cd frontend && npm run dev"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
