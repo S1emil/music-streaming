@@ -40,6 +40,8 @@ export const PlayerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const sourceConnectedRef = useRef(false);
   const analyzedTracksRef = useRef(new Set<string>());
   const MAX_ANALYZED_CACHE = 200;
+  const playCountedRef = useRef(false);
+  const MIN_PLAY_TIME = 30;
 
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [queue, setQueue] = useState<Track[]>([]);
@@ -145,7 +147,7 @@ export const PlayerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     }
     setCurrentTrack(track);
     setIsPlaying(true);
-    tracks.play(track.id).catch(() => {});
+    playCountedRef.current = false;
     audio.src = track.filePath;
     audio.load();
     audio.play().catch(() => {});
@@ -277,7 +279,7 @@ export const PlayerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setCurrentIndex(index);
     setCurrentTrack(q[index]);
     setIsPlaying(true);
-    tracks.play(q[index].id).catch(() => {});
+    playCountedRef.current = false;
     if (audio) {
       audio.src = q[index].filePath;
       audio.load();
@@ -299,10 +301,14 @@ export const PlayerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const handler = () => {
       setProgress(audio.currentTime);
       setDuration(audio.duration || 0);
+      if (!playCountedRef.current && audio.currentTime >= MIN_PLAY_TIME && currentTrack) {
+        playCountedRef.current = true;
+        tracks.play(currentTrack.id).catch(() => {});
+      }
     };
     audio.addEventListener('timeupdate', handler);
     return () => audio.removeEventListener('timeupdate', handler);
-  }, []);
+  }, [currentTrack]);
 
   // sync volume on mount
   useEffect(() => {
