@@ -318,10 +318,13 @@ router.post('/:id/like', authenticate, async (req: AuthRequest, res: Response) =
         transaction: t,
       });
 
-      const likedPlaylist = await Playlist.findOne({
-        where: { userId: req.user!.id, isSystem: true },
-        transaction: t,
-      });
+      let likedPlaylist: Playlist | null = null;
+      try {
+        likedPlaylist = await Playlist.findOne({
+          where: { userId: req.user!.id, isSystem: true },
+          transaction: t,
+        });
+      } catch {}
 
       if (existingLike) {
         await existingLike.destroy({ transaction: t });
