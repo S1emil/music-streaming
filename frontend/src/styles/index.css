@@ -2436,6 +2436,26 @@ img {
   color: var(--bg-dark);
 }
 
+.custom-genre-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.custom-genre-input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.custom-genre-input::placeholder {
+  color: var(--text-muted);
+}
+
 /* Lyrics Section Header */
 .lyrics-section-header {
   display: flex;

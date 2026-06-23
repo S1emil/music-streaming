@@ -126,6 +126,26 @@ router.get('/genres', async (req: AuthRequest, res: Response) => {
   }
 });
 
+router.post('/genres', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const { name } = req.body;
+    if (!name) {
+      return res.status(400).json({ error: 'Genre name is required' });
+    }
+
+    const existing = await Genre.findOne({ where: { name } });
+    if (existing) {
+      return res.json(existing);
+    }
+
+    const slug = name.toLowerCase().replace(/\s+/g, '-');
+    const genre = await Genre.create({ name, slug });
+    res.status(201).json(genre);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/recommendations', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { limit = 20 } = req.query;

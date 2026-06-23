@@ -29,6 +29,7 @@ const UploadTrack: React.FC = () => {
   const [fetchingCover, setFetchingCover] = React.useState(false);
   const [artists, setArtists] = React.useState<any[]>([]);
   const [genres, setGenres] = React.useState<any[]>([]);
+  const [customGenreName, setCustomGenreName] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [uploadedTrackId, setUploadedTrackId] = React.useState<string | null>(null);
   const [uploadedTrack, setUploadedTrack] = React.useState<Track | null>(null);
@@ -90,6 +91,22 @@ const UploadTrack: React.FC = () => {
 
   const handleToggleGenre = (id: string) => {
     setGenreIds(prev => prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]);
+  };
+
+  const handleAddCustomGenre = async () => {
+    if (!customGenreName.trim()) return;
+    try {
+      const newGenre = await searchApi.createGenre(customGenreName.trim());
+      if (!genres.find((g) => g.id === newGenre.id)) {
+        setGenres((prev) => [...prev, newGenre]);
+      }
+      if (!genreIds.includes(newGenre.id)) {
+        setGenreIds((prev) => [...prev, newGenre.id]);
+      }
+      setCustomGenreName('');
+    } catch {
+      toast.error('Не удалось создать жанр');
+    }
   };
 
   const handleFetchLyrics = async () => {
@@ -332,6 +349,18 @@ const UploadTrack: React.FC = () => {
               {genres.map(g => (
                 <button key={g.id} type="button" className={`genre-chip ${genreIds.includes(g.id) ? 'active' : ''}`} onClick={() => handleToggleGenre(g.id)}>{g.name}</button>
               ))}
+            </div>
+            <div className="custom-genre-row">
+              <input
+                type="text"
+                value={customGenreName}
+                onChange={e => setCustomGenreName(e.target.value)}
+                placeholder="Свой жанр..."
+                className="custom-genre-input"
+              />
+              <button type="button" className="btn btn-outline btn-sm" onClick={handleAddCustomGenre} disabled={!customGenreName.trim()}>
+                Добавить
+              </button>
             </div>
           </div>
 

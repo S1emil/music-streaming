@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
 import sequelize from './db/connection';
+import Genre from './models/Genre';
 import { errorHandler } from './middleware/errorHandler';
 import './models';
 
@@ -60,6 +61,17 @@ const start = async () => {
 
     await sequelize.sync({ force: false });
     console.log('Models synchronized');
+
+    const defaultGenres = [
+      'Поп', 'Рок', 'Хип-хоп', 'R&B', 'Электроника', 'Джаз', 'Классика',
+      'Регги', 'Кантри', 'Метал', 'Панк', 'Инди', 'Фолк', 'Блюз',
+      'Латино', 'K-Pop', 'Рэп', 'Диско', 'Фанк', 'Соул',
+    ];
+    for (const name of defaultGenres) {
+      const slug = name.toLowerCase().replace(/\s+/g, '-');
+      await Genre.findOrCreate({ where: { name }, defaults: { name, slug } });
+    }
+    console.log('Default genres seeded');
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

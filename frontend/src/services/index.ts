@@ -70,6 +70,7 @@ export const search = {
   search: (q: string, type?: string) =>
     api.get<SearchResults>('/api/search', { params: { q, type } }).then((r) => r.data),
   genres: () => api.get('/api/search/genres').then((r) => r.data),
+  createGenre: (name: string) => api.post('/api/search/genres', { name }).then((r) => r.data),
   recommendations: () => api.get<Track[]>('/api/search/recommendations').then((r) => r.data),
   similar: (trackId: string) => api.get<Track[]>(`/api/search/similar/${trackId}`).then((r) => r.data),
   semantic: (q: string) => api.get<Track[]>('/api/search/semantic', { params: { q } }).then((r) => r.data),
