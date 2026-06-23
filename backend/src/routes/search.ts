@@ -43,8 +43,7 @@ router.get('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       const titleArtistIds = new Set(tracks.map((t: any) => t.id));
 
       const searchWords = buildSearchVector(q as string);
-      const themeTracks = await Track.findAll({
-        where: { themes: { [Op.ne]: null } },
+      const allTracks = await Track.findAll({
         include: [
           { model: Artist, as: 'Artist', attributes: ['id', 'name', 'image'] },
           { model: Genre, as: 'Genre', attributes: ['id', 'name', 'slug'] },
@@ -52,9 +51,10 @@ router.get('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         limit: 200,
       });
 
-      for (const track of themeTracks) {
+      for (const track of allTracks) {
         if (titleArtistIds.has(track.id)) continue;
         const trackThemes = (track as any).themes || [];
+        if (!Array.isArray(trackThemes) || trackThemes.length === 0) continue;
         const trackMood = (track as any).mood || '';
         const score = semanticScore(trackThemes, trackMood, searchWords);
         if (score > 0) {
