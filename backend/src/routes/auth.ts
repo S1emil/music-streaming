@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { AuthRequest, authenticate } from '../middleware/auth';
+import { uploadAvatar } from '../middleware/upload';
 import User from '../models/User';
 
 const router = Router();
@@ -29,7 +30,8 @@ router.post('/register', async (req: AuthRequest, res: Response) => {
       return res.status(409).json({ error: 'Username already taken' });
     }
 
-    const user = await User.create({ username, email, password, displayName, role: 'user' });
+    const role = req.body.role === 'artist' ? 'artist' : 'user';
+    const user = await User.create({ username, email, password, displayName, role });
 
     const token = jwt.sign(
       { id: user.id, username: user.username, email: user.email, role: user.role },
@@ -131,6 +133,24 @@ router.put('/me', authenticate, async (req: AuthRequest, res: Response) => {
       avatar: user.avatar,
       bio: user.bio,
     });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/me/avatar', authenticate, uploadAvatar.single('avatar'), async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await User.findByPk(req.user!.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (req.file) {
+      user.avatar = `/uploads/avatars/${req.file.filename}`;
+      await user.save();
+    }
+
+    res.json({ avatar: user.avatar });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

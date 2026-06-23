@@ -99,6 +99,7 @@ const Player: React.FC<PlayerBarProps> = ({ onExpand }) => {
           </button>
         </div>
 
+        {!showVisualizer && (
         <div className="progress-bar">
           <span className="time">{formatTime(progress)}</span>
           <div className="progress-track-mini" onClick={(e) => {
@@ -110,6 +111,7 @@ const Player: React.FC<PlayerBarProps> = ({ onExpand }) => {
           </div>
           <span className="time">{formatTime(duration)}</span>
         </div>
+        )}
       </div>
 
       <div className="player-volume">

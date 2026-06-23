@@ -390,11 +390,15 @@ router.put('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.delete('/:id', authenticate, requireRole('admin'), async (req: AuthRequest, res: Response) => {
+router.delete('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const track = await Track.findByPk(req.params.id);
     if (!track) {
       return res.status(404).json({ error: 'Track not found' });
+    }
+
+    if (req.user!.role !== 'admin' && track.uploadedBy !== req.user!.id) {
+      return res.status(403).json({ error: 'You can only delete your own tracks' });
     }
 
     if (track.filePath) {

@@ -9,6 +9,10 @@ export const auth = {
   me: () => api.get<User>('/api/auth/me').then((r) => r.data),
   updateProfile: (data: { displayName?: string; bio?: string }) =>
     api.put<User>('/api/auth/me', data).then((r) => r.data),
+  uploadAvatar: (formData: FormData) =>
+    api.post<{ avatar: string }>('/api/auth/me/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then((r) => r.data),
 };
 
 export const tracks = {
