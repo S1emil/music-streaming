@@ -14,6 +14,10 @@ const UploadTrack: React.FC = () => {
   const [artistId, setArtistId] = React.useState('');
   const [customArtistName, setCustomArtistName] = React.useState('');
   const [useCustomArtist, setUseCustomArtist] = React.useState(false);
+  const [hasFeat, setHasFeat] = React.useState(false);
+  const [featArtistId, setFeatArtistId] = React.useState('');
+  const [featCustomName, setFeatCustomName] = React.useState('');
+  const [useCustomFeat, setUseCustomFeat] = React.useState(false);
   const [genreIds, setGenreIds] = React.useState<string[]>([]);
   const [duration, setDuration] = React.useState(0);
   const [explicit, setExplicit] = React.useState(false);
@@ -120,6 +124,27 @@ const UploadTrack: React.FC = () => {
     }
     if (!finalArtistId) { toast.error('Выберите или создайте артиста'); return; }
 
+    let finalTitle = title;
+    if (hasFeat) {
+      let featName = '';
+      if (useCustomFeat && featCustomName.trim()) {
+        try {
+          const resp = await fetch('/api/artists', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+            body: JSON.stringify({ name: featCustomName }),
+          });
+          const newArtist = await resp.json();
+          featName = newArtist.name;
+        } catch { toast.error('Не удалось создать фит-артиста'); return; }
+      } else if (featArtistId) {
+        const featArtist = artists.find((a) => a.id === featArtistId);
+        featName = featArtist?.name || '';
+      }
+      if (!featName) { toast.error('Выберите или создайте фит-артиста'); return; }
+      finalTitle = `${title} (feat. ${featName})`;
+    }
+
     setLoading(true);
     try {
       let finalCoverUrl = coverUrl;
@@ -140,7 +165,7 @@ const UploadTrack: React.FC = () => {
 
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('title', title);
+      formData.append('title', finalTitle);
       formData.append('artistId', finalArtistId);
       formData.append('duration', duration.toString());
       formData.append('explicit', explicit.toString());
@@ -263,6 +288,42 @@ const UploadTrack: React.FC = () => {
                 </select>
               </div>
             </div>
+          )}
+
+          <div className="form-group">
+            <label className="toggle-label">
+              <input type="checkbox" checked={hasFeat} onChange={e => setHasFeat(e.target.checked)} />
+              <span className="toggle-switch"></span>
+              Есть фит (Feat.)
+            </label>
+          </div>
+
+          {hasFeat && (
+            <>
+              <div className="form-group">
+                <label className="toggle-label">
+                  <input type="checkbox" checked={useCustomFeat} onChange={e => setUseCustomFeat(e.target.checked)} />
+                  <span className="toggle-switch"></span>
+                  Ввести имя фит-артиста вручную
+                </label>
+              </div>
+              {useCustomFeat ? (
+                <div className="form-group">
+                  <label>Имя фит-артиста *</label>
+                  <input type="text" value={featCustomName} onChange={e => setFeatCustomName(e.target.value)} placeholder="Введите имя фит-артиста" />
+                </div>
+              ) : (
+                <div className="form-group">
+                  <label>Фит-артист *</label>
+                  <div className="select-wrapper">
+                    <select value={featArtistId} onChange={e => setFeatArtistId(e.target.value)}>
+                      <option value="">Выберите фит-артиста</option>
+                      {artists.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                    </select>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           <div className="form-group">

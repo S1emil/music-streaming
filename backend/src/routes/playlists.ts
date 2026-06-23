@@ -14,6 +14,7 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
       where: { userId: req.user!.id },
       include: [
         { model: User, as: 'Owner', attributes: ['id', 'username', 'displayName'] },
+        { model: Track, as: 'Tracks', attributes: ['id'] },
       ],
       order: [['createdAt', 'DESC']],
     });

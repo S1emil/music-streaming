@@ -63,6 +63,7 @@ router.get('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         }
       } catch {}
 
+      let likedIds = new Set<string>();
       if (req.user) {
         const trackIds = tracks.map((t: any) => t.id);
         if (trackIds.length > 0) {
@@ -70,13 +71,12 @@ router.get('/', optionalAuth, async (req: AuthRequest, res: Response) => {
             where: { userId: req.user.id, trackId: { [Op.in]: trackIds } },
             attributes: ['trackId'],
           });
-          const likedIds = new Set(userLikes.map((l) => l.trackId));
-          tracks.forEach((t: any) => { t.isLiked = likedIds.has(t.id); });
+          likedIds = new Set(userLikes.map((l) => l.trackId));
         }
       }
 
       tracks = tracks.slice(0, 20);
-      results.tracks = tracks;
+      results.tracks = tracks.map((t) => ({ ...t.toJSON(), isLiked: likedIds.has(t.id) }));
     }
 
     if (type === 'all' || type === 'artists') {
