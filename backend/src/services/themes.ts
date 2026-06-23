@@ -36,7 +36,7 @@ const MOOD_KEYWORDS: Record<string, string[]> = {
 };
 
 const SYNONYM_GROUPS: Record<string, string[]> = {
-  'sadness': ['печаль', 'тоска', 'уныние', 'меланхолия', 'горе', 'слёзы', 'грустно', 'грустный', 'печальный', 'тоскливый', 'унылый', 'плач', 'слезы', 'боль', 'больно', 'страдан', 'sad', 'sorrow', 'melancholy', 'grief', 'unhappy', 'blue', 'cry', 'tears', 'pain'],
+  'sadness': ['печаль', 'тоска', 'уныние', 'меланхолия', 'горе', 'слёзы', 'грустно', 'грусть', 'грустный', 'печальный', 'тоскливый', 'унылый', 'плач', 'слезы', 'боль', 'больно', 'страдан', 'sad', 'sorrow', 'melancholy', 'grief', 'unhappy', 'blue', 'cry', 'tears', 'pain'],
   'joy': ['счастье', 'веселье', 'весело', 'ликование', 'восторг', 'улыбка', 'смех', 'весёлый', 'радостный', 'счастливый', 'праздник', 'радость', 'happy', 'joy', 'cheerful', 'delight', 'pleasure', 'fun', 'smile', 'laugh', 'party', 'celebrate'],
   'love': ['любовь', 'влюблённость', 'романтика', 'нежность', 'страсть', 'обожание', 'привязанность', 'сердце', 'обнимаю', 'обнять', 'поцелуй', 'люблю', 'любимый', 'любимая', 'влюблён', 'влюблена', 'love', 'romance', 'passion', 'affection', 'devotion', 'crush', 'kiss', 'embrace', 'heart'],
   'loneliness': ['уединение', 'изоляция', 'одинокий', 'одинокая', 'одиноко', 'покинутость', 'заброшенность', 'одиночество', 'один', 'одна', 'без тебя', 'без него', 'без неё', 'alone', 'lonely', 'solitary', 'isolated', 'abandoned', 'nobody'],
@@ -152,7 +152,7 @@ function expandWithSynonyms(words: string[]): string[] {
         synonyms.forEach((s) => expanded.add(s));
       }
       for (const syn of synonyms) {
-        if (syn.length > 3 && (word.startsWith(syn.slice(0, 4)) || syn.startsWith(word.slice(0, 4)))) {
+        if (syn.length > 5 && syn.startsWith(word) && word.length >= 5) {
           expanded.add(synonymGroup);
           synonyms.forEach((s) => expanded.add(s));
           break;
