@@ -101,7 +101,6 @@ const FullScreenPlayer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     if (currentTrack) {
       setLikeCount(currentTrack.likes);
       setLiked(currentTrack.isLiked || false);
-      setShowInfo(false);
       setSimilarTracks([]);
     }
   }, [currentTrack?.id]);
