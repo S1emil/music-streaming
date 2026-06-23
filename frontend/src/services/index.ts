@@ -54,6 +54,10 @@ export const playlists = {
     api.post(`/api/playlists/${id}/tracks`, { trackId }).then((r) => r.data),
   removeTrack: (id: string, trackId: string) =>
     api.delete(`/api/playlists/${id}/tracks/${trackId}`).then((r) => r.data),
+  uploadCover: (id: string, formData: FormData) =>
+    api.put<{ coverUrl: string }>(`/api/playlists/${id}/cover`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then((r) => r.data),
   generate: (data: { mood?: string; genreId?: string; limit?: number }) =>
     api.post<{ tracks: Track[]; suggestedName: string; suggestedDescription: string; mood: string | null }>(
       '/api/playlists/generate', data

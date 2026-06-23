@@ -6,7 +6,7 @@ import TrackCard from '../components/TrackCard';
 import { useAuth } from '../context/AuthContext';
 import { usePlayer } from '../context/PlayerContext';
 import toast from 'react-hot-toast';
-import { FiPlay, FiTrash2, FiEdit2 } from 'react-icons/fi';
+import { FiPlay, FiTrash2, FiEdit2, FiImage } from 'react-icons/fi';
 
 const PlaylistDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,6 +38,20 @@ const PlaylistDetail: React.FC = () => {
   const handlePlayAll = () => {
     if (playlist?.Tracks && playlist.Tracks.length > 0) {
       play(playlist.Tracks[0], playlist.Tracks);
+    }
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id) return;
+    try {
+      const formData = new FormData();
+      formData.append('cover', file);
+      const result = await playlistsApi.uploadCover(id, formData);
+      setPlaylist({ ...playlist!, coverUrl: result.coverUrl });
+      toast.success('Обложка обновлена');
+    } catch {
+      toast.error('Ошибка загрузки обложки');
     }
   };
 
@@ -92,6 +106,12 @@ const PlaylistDetail: React.FC = () => {
             <img src={playlist.coverUrl} alt={playlist.name} />
           ) : (
             <div className="cover-placeholder large">♫</div>
+          )}
+          {isOwner && (
+            <label className="playlist-cover-upload" title="Загрузить обложку">
+              <FiImage size={16} />
+              <input type="file" accept="image/*" onChange={handleCoverUpload} hidden />
+            </label>
           )}
         </div>
 

@@ -1,5 +1,6 @@
 import { Router, Response } from 'express';
 import { AuthRequest, authenticate, optionalAuth } from '../middleware/auth';
+import { uploadCover } from '../middleware/upload';
 import { Playlist, Track, Artist, User } from '../models';
 import PlaylistTrack from '../models/PlaylistTrack';
 import { generatePlaylist } from '../services/playlistGenerator';
@@ -163,6 +164,29 @@ router.put('/:id', authenticate, async (req: AuthRequest, res: Response) => {
 
     await playlist.save();
     res.json(playlist);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.put('/:id/cover', authenticate, uploadCover.single('cover'), async (req: AuthRequest, res: Response) => {
+  try {
+    const playlist = await Playlist.findByPk(req.params.id);
+
+    if (!playlist) {
+      return res.status(404).json({ error: 'Playlist not found' });
+    }
+
+    if (playlist.userId !== req.user!.id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    if (req.file) {
+      playlist.coverUrl = `/uploads/covers/${req.file.filename}`;
+      await playlist.save();
+    }
+
+    res.json({ coverUrl: playlist.coverUrl });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
