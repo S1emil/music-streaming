@@ -179,7 +179,7 @@ export function semanticScore(trackThemes: string[], trackMood: string, searchWo
         score += 4;
       }
     }
-    if (trackMood.includes(word) || word.includes(trackMood)) {
+    if (trackMood && (trackMood.includes(word) || word.includes(trackMood))) {
       score += 3;
     }
   }
@@ -207,7 +207,7 @@ export function semanticScore(trackThemes: string[], trackMood: string, searchWo
   for (const [themeName, keywords] of Object.entries(THEME_KEYWORDS)) {
     if (trackThemes.includes(themeName)) {
       for (const kw of keywords) {
-        if (searchSet.has(kw) || searchWords.some((sw) => sw.includes(kw) || kw.includes(sw))) {
+        if (searchSet.has(kw)) {
           score += 1;
         }
       }
