@@ -99,10 +99,14 @@ export async function fetchLyricsBySearch(artist: string, title: string): Promis
     }
 
     const bestMatch = results.find((r: any) => r.syncedLyrics) || results[0];
-    const lyrics = bestMatch.syncedLyrics || bestMatch.plainLyrics;
+    let lyrics = bestMatch.syncedLyrics || bestMatch.plainLyrics;
 
     if (!lyrics) {
       throw new Error('Текст песни не найден');
+    }
+
+    if (bestMatch.syncedLyrics) {
+      lyrics = lyrics.replace(/^\[\d{2}:\d{2}\.\d{2,3}\]\s?/gm, '');
     }
 
     return { lyrics, source: 'genius' };

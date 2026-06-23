@@ -43,6 +43,11 @@ router.post('/', authenticate, requireRole('admin', 'artist'), async (req: AuthR
       return res.status(400).json({ error: 'Artist name is required' });
     }
 
+    const existing = await Artist.findOne({ where: { name } });
+    if (existing) {
+      return res.json(existing);
+    }
+
     const artist = await Artist.create({ name, bio: bio || null });
     res.status(201).json(artist);
   } catch (error: any) {

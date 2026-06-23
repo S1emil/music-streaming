@@ -189,7 +189,6 @@ const FullScreenPlayer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <p className="fullscreen-artist">{currentTrack.Artist?.name || 'Неизвестный артист'}</p>
         </div>
 
-        {!showVisualizer && (
         <div className="fullscreen-progress">
           <div className="progress-track" onClick={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
@@ -204,7 +203,6 @@ const FullScreenPlayer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <span>{formatTime(duration)}</span>
           </div>
         </div>
-        )}
 
         <div className="fullscreen-controls">
           <button
