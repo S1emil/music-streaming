@@ -2,9 +2,13 @@ import { Router, Response } from 'express';
 import { AuthRequest, authenticate, optionalAuth, requireRole } from '../middleware/auth';
 import { uploadMusic, uploadCover } from '../middleware/upload';
 import { Track, Artist, Genre, Album, Like, PlayHistory, User, TrackGenre } from '../models';
+import { Op } from 'sequelize';
 import sequelize from '../db/connection';
 import { fetchLyricsBySearch } from '../services/lyrics';
 import { analyzeThemes, extractTags, buildSearchVector, semanticScore } from '../services/themes';
+import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
 
 const router = Router();
 
@@ -21,7 +25,12 @@ router.post('/upload-cover', authenticate, uploadCover.single('cover'), async (r
 
 router.get('/', optionalAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const { genre, artist, sort = 'createdAt', order = 'DESC', limit = 20, offset = 0 } = req.query;
+    const { genre, artist, sort = 'createdAt', order = 'DESC', limit = '20', offset = '0' } = req.query;
+
+    const allowedSortFields = ['createdAt', 'title', 'plays', 'likes', 'duration', 'updatedAt'];
+    const allowedOrders = ['ASC', 'DESC'];
+    const safeSort = allowedSortFields.includes(sort as string) ? sort as string : 'createdAt';
+    const safeOrder = allowedOrders.includes((order as string)?.toUpperCase()) ? (order as string).toUpperCase() : 'DESC';
 
     const where: any = {};
     if (genre) where.genreId = genre;
@@ -33,9 +42,9 @@ router.get('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         { model: Artist, as: 'Artist', attributes: ['id', 'name', 'image'] },
         { model: Genre, as: 'Genre', attributes: ['id', 'name', 'slug'] },
       ],
-      order: [[sort as string, order as string]],
-      limit: parseInt(limit as string),
-      offset: parseInt(offset as string),
+      order: [[safeSort, safeOrder]],
+      limit: Math.min(Math.max(parseInt(limit as string) || 20, 1), 100),
+      offset: Math.max(parseInt(offset as string) || 0, 0),
     });
 
     res.json(tracks);
@@ -97,7 +106,6 @@ router.get('/search/cover', authenticate, async (req: AuthRequest, res: Response
     if (!title) {
       return res.status(400).json({ error: 'Title is required' });
     }
-    const axios = require('axios');
     const searchQuery = `${artist || ''} ${title}`.trim();
     const resp = await axios.get(`https://api.genius.com/search?q=${encodeURIComponent(searchQuery)}`, {
       headers: { Authorization: `Bearer ${process.env.GENIUS_ACCESS_TOKEN || ''}` },
@@ -221,11 +229,11 @@ router.post('/', authenticate, requireRole('admin', 'artist'), uploadMusic.singl
       filePath: `/uploads/music/${req.file.filename}`,
       coverUrl: coverUrl || null,
       uploadedBy: req.user!.id,
-      explicit: explicit === 'true',
+      explicit: explicit === 'true' || explicit === true,
       lyrics: lyrics || null,
       themes,
       mood,
-      tags: tags ? JSON.parse(tags) : [],
+      tags: (() => { try { return tags ? JSON.parse(tags) : []; } catch { return []; } })(),
       tempo: tempo ? parseFloat(tempo) : null,
       energy: energy ? parseFloat(energy) : null,
       valence: valence ? parseFloat(valence) : null,
@@ -266,17 +274,32 @@ router.post('/:id/play', optionalAuth, async (req: AuthRequest, res: Response) =
       return res.status(404).json({ error: 'Track not found' });
     }
 
+    const { progress } = req.body;
+
     await track.increment('plays');
+    await track.reload();
 
     if (req.user) {
-      await PlayHistory.create({
-        userId: req.user.id,
-        trackId: track.id,
-        progress: 0,
+      const thirtySecondsAgo = new Date(Date.now() - 30 * 1000);
+      const recentPlay = await PlayHistory.findOne({
+        where: {
+          userId: req.user.id,
+          trackId: track.id,
+          playedAt: { [Op.gte]: thirtySecondsAgo },
+        },
+        order: [['playedAt', 'DESC']],
       });
+
+      if (!recentPlay) {
+        await PlayHistory.create({
+          userId: req.user.id,
+          trackId: track.id,
+          progress: progress != null ? parseInt(progress) || 0 : 0,
+        });
+      }
     }
 
-    res.json({ plays: track.plays + 1 });
+    res.json({ plays: track.plays });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -289,19 +312,26 @@ router.post('/:id/like', authenticate, async (req: AuthRequest, res: Response) =
       return res.status(404).json({ error: 'Track not found' });
     }
 
-    const existingLike = await Like.findOne({
-      where: { userId: req.user!.id, trackId: track.id },
+    const result = await sequelize.transaction(async (t) => {
+      const existingLike = await Like.findOne({
+        where: { userId: req.user!.id, trackId: track.id },
+        transaction: t,
+      });
+
+      if (existingLike) {
+        await existingLike.destroy({ transaction: t });
+        await Track.decrement('likes', { where: { id: track.id }, transaction: t });
+        await track.reload({ transaction: t });
+        return { liked: false, likes: track.likes };
+      } else {
+        await Like.create({ userId: req.user!.id, trackId: track.id }, { transaction: t });
+        await Track.increment('likes', { where: { id: track.id }, transaction: t });
+        await track.reload({ transaction: t });
+        return { liked: true, likes: track.likes };
+      }
     });
 
-    if (existingLike) {
-      await existingLike.destroy();
-      await track.decrement('likes');
-      res.json({ liked: false, likes: track.likes - 1 });
-    } else {
-      await Like.create({ userId: req.user!.id, trackId: track.id });
-      await track.increment('likes');
-      res.json({ liked: true, likes: track.likes + 1 });
-    }
+    res.json(result);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -367,16 +397,15 @@ router.delete('/:id', authenticate, requireRole('admin'), async (req: AuthReques
       return res.status(404).json({ error: 'Track not found' });
     }
 
-    const fs = require('fs');
-    const path = require('path');
-
     if (track.filePath) {
-      const audioPath = path.join(__dirname, '..', track.filePath);
-      if (fs.existsSync(audioPath)) fs.unlinkSync(audioPath);
+      const audioPath = path.resolve(__dirname, '..', '..', track.filePath);
+      const uploadsDir = path.resolve(__dirname, '..', '..', 'uploads');
+      if (audioPath.startsWith(uploadsDir) && fs.existsSync(audioPath)) fs.unlinkSync(audioPath);
     }
     if (track.coverUrl && track.coverUrl.startsWith('/uploads/')) {
-      const coverPath = path.join(__dirname, '..', track.coverUrl);
-      if (fs.existsSync(coverPath)) fs.unlinkSync(coverPath);
+      const coverPath = path.resolve(__dirname, '..', '..', track.coverUrl);
+      const uploadsDir = path.resolve(__dirname, '..', '..', 'uploads');
+      if (coverPath.startsWith(uploadsDir) && fs.existsSync(coverPath)) fs.unlinkSync(coverPath);
     }
 
     await Like.destroy({ where: { trackId: track.id } });
@@ -397,6 +426,10 @@ router.put('/:id/features', authenticate, async (req: AuthRequest, res: Response
 
     if (!track) {
       return res.status(404).json({ error: 'Track not found' });
+    }
+
+    if (track.uploadedBy !== req.user!.id && req.user!.role !== 'admin') {
+      return res.status(403).json({ error: 'Not authorized' });
     }
 
     if (energy != null) track.energy = parseFloat(energy);
@@ -428,79 +461,20 @@ router.post('/:id/lyrics', authenticate, async (req: AuthRequest, res: Response)
       return res.status(404).json({ error: 'Track not found' });
     }
 
+    if (track.uploadedBy !== req.user!.id && req.user!.role !== 'admin') {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
     track.lyrics = lyrics;
-    await track.save();
-
-    res.json({ lyrics: track.lyrics });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.get('/search/lyrics', authenticate, async (req: AuthRequest, res: Response) => {
-  try {
-    const { title, artist } = req.query;
-    if (!title) {
-      return res.status(400).json({ error: 'Title is required' });
-    }
-    const result = await fetchLyricsBySearch(artist as string || '', title as string);
-    res.json(result);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.get('/search/cover', authenticate, async (req: AuthRequest, res: Response) => {
-  try {
-    const { title, artist } = req.query;
-    if (!title) {
-      return res.status(400).json({ error: 'Title is required' });
-    }
-    const axios = require('axios');
-    const searchQuery = `${artist || ''} ${title}`.trim();
-    const resp = await axios.get(`https://api.genius.com/search?q=${encodeURIComponent(searchQuery)}`, {
-      headers: { Authorization: `Bearer ${process.env.GENIUS_ACCESS_TOKEN || ''}` },
-    });
-    const hits = resp.data?.response?.hits || [];
-    if (hits.length > 0) {
-      const songArt = hits[0].result?.song_art_image_thumbnail_url || hits[0].result?.header_image_thumbnail_url;
-      res.json({ coverUrl: songArt || null });
+    if (lyrics) {
+      const analysis = analyzeThemes(lyrics);
+      track.themes = analysis.themes;
+      track.mood = analysis.mood;
     } else {
-      res.json({ coverUrl: null });
+      track.themes = [];
+      track.mood = null;
     }
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.get('/:id/lyrics/fetch', authenticate, async (req: AuthRequest, res: Response) => {
-  try {
-    const track = await Track.findByPk(req.params.id, {
-      include: [{ model: Artist, as: 'Artist', attributes: ['name'] }],
-    });
-
-    if (!track) {
-      return res.status(404).json({ error: 'Track not found' });
-    }
-
-    const artistName = (track as any).Artist?.name || '';
-    const result = await fetchLyricsBySearch(artistName, track.title);
-
-    res.json(result);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.get('/:id/lyrics', optionalAuth, async (req: AuthRequest, res: Response) => {
-  try {
-    const track = await Track.findByPk(req.params.id, {
-      attributes: ['id', 'lyrics'],
-    });
-
-    if (!track) {
-      return res.status(404).json({ error: 'Track not found' });
-    }
+    await track.save();
 
     res.json({ lyrics: track.lyrics });
   } catch (error: any) {

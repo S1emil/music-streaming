@@ -29,6 +29,13 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="loading">Загрузка...</div>;
+  if (user) return <Navigate to="/" />;
+  return <>{children}</>;
+};
+
 const AppContent: React.FC = () => {
   const [fullScreen, setFullScreen] = React.useState(false);
   const { currentTrack } = usePlayer();
@@ -39,9 +46,9 @@ const AppContent: React.FC = () => {
         <Header />
         <main className="main-content">
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
             <Route path="/search" element={<Search />} />
             <Route path="/radio" element={<Radio />} />
             <Route path="/tracks" element={<AllTracks />} />
@@ -52,7 +59,7 @@ const AppContent: React.FC = () => {
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="/generate-playlist" element={<ProtectedRoute><GeneratePlaylist /></ProtectedRoute>} />
             <Route path="/stats" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           </Routes>
         </main>
         {currentTrack && <Player onExpand={() => setFullScreen(true)} />}

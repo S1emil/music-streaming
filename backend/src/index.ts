@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
@@ -16,6 +17,11 @@ import userRoutes from './routes/users';
 
 dotenv.config();
 
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET environment variable is not set');
+  process.exit(1);
+}
+
 const uploadsDir = path.join(__dirname, '../uploads');
 ['music', 'covers', 'avatars'].forEach((dir) => {
   const fullPath = path.join(uploadsDir, dir);
@@ -27,7 +33,8 @@ const uploadsDir = path.join(__dirname, '../uploads');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(helmet());
+app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

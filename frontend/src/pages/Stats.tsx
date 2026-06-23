@@ -77,8 +77,8 @@ const Stats: React.FC = () => {
     return `${m} мин`;
   };
 
-  const handlePlay = (track: any) => {
-    play(track, stats.recentlyPlayed);
+  const handlePlay = (track: any, queue?: any[]) => {
+    play(track, queue || stats.recentlyPlayed);
   };
 
   return (
@@ -358,7 +358,7 @@ const Stats: React.FC = () => {
               <div
                 key={track.id}
                 className={`track-list-item ${currentTrack?.id === track.id ? 'active' : ''}`}
-                onClick={() => handlePlay(track)}
+                onClick={() => handlePlay(track, stats.mostLiked)}
               >
                 <div className="track-cover">
                   {track.coverUrl ? (

@@ -56,7 +56,7 @@ const Register: React.FC = () => {
     <div className="auth-page">
       <div className="auth-card">
         <h1>Создать аккаунт</h1>
-        <p>Присоединяйтесь к MusicStream</p>
+        <p>Присоединяйтесь к Wavve</p>
 
         <form onSubmit={handleSubmit}>
           <div className="role-selector">

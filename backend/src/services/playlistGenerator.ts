@@ -117,10 +117,6 @@ export async function generatePlaylist(options: GenerateOptions) {
 
     if (tracks.length === 0 && mood) {
       delete genreWhere[Op.or];
-      delete genreWhere.energy;
-      delete genreWhere.valence;
-      delete genreWhere.danceability;
-      delete genreWhere.acousticness;
       tracks = await Track.findAll({
         where: genreWhere,
         include,
@@ -154,10 +150,6 @@ export async function generatePlaylist(options: GenerateOptions) {
 
   if (tracks.length === 0 && mood) {
     delete where[Op.or];
-    delete where.energy;
-    delete where.valence;
-    delete where.danceability;
-    delete where.acousticness;
     tracks = await Track.findAll({
       where,
       include,

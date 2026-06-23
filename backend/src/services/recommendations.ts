@@ -18,25 +18,52 @@ let cachedSVDModel: SVDModel | null = null;
 let svdModelTimestamp = 0;
 const SVD_CACHE_TTL = 5 * 60 * 1000;
 
-async function getSVDModel(): Promise<SVDModel | null> {
+let svdBuildPromise: Promise<SVDModel | null> | null = null;
+
+export function resetSVDModelCache(): void {
+  cachedSVDModel = null;
+  svdModelTimestamp = 0;
+  svdBuildPromise = null;
+}
+
+export async function getSVDModel(): Promise<SVDModel | null> {
   const now = Date.now();
-  if (cachedSVDModel && now - svdModelTimestamp < SVD_CACHE_TTL) {
+  if (now - svdModelTimestamp < SVD_CACHE_TTL && svdModelTimestamp > 0) {
     return cachedSVDModel;
   }
-  cachedSVDModel = await buildSVDModel();
-  svdModelTimestamp = now;
-  return cachedSVDModel;
+
+  if (svdBuildPromise) {
+    return svdBuildPromise;
+  }
+
+  svdBuildPromise = buildSVDModel()
+    .then((model) => {
+      if (model) {
+        cachedSVDModel = model;
+      }
+      svdModelTimestamp = Date.now();
+      return model;
+    })
+    .catch(() => {
+      svdModelTimestamp = Date.now();
+      return null;
+    })
+    .finally(() => {
+      svdBuildPromise = null;
+    });
+
+  return svdBuildPromise;
 }
 
 export async function buildUserProfile(userId: string): Promise<UserProfile> {
   const likes = await Like.findAll({
     where: { userId },
-    include: [{ model: Track, as: 'Track', attributes: ['genreId', 'artistId', 'energy', 'valence', 'danceability', 'acousticness', 'tempo'] }],
+    include: [{ model: Track, as: 'Track', attributes: ['id', 'genreId', 'artistId', 'energy', 'valence', 'danceability', 'acousticness', 'tempo'] }],
   });
 
   const history = await PlayHistory.findAll({
     where: { userId },
-    include: [{ model: Track, as: 'Track', attributes: ['genreId', 'artistId', 'energy', 'valence', 'danceability', 'acousticness', 'tempo'] }],
+    include: [{ model: Track, as: 'Track', attributes: ['id', 'genreId', 'artistId', 'energy', 'valence', 'danceability', 'acousticness', 'tempo'] }],
     order: [['playedAt', 'DESC']],
     limit: 100,
   });
@@ -44,9 +71,17 @@ export async function buildUserProfile(userId: string): Promise<UserProfile> {
   const genrePreferences = new Map<string, number>();
   const artistPreferences = new Map<string, number>();
   let totalEnergy = 0, totalValence = 0, totalDanceability = 0, totalAcousticness = 0, totalTempo = 0;
-  let audioFeatureCount = 0;
+  let energyCount = 0, valenceCount = 0, danceabilityCount = 0, acousticnessCount = 0, tempoCount = 0;
   const likedTrackIds = new Set<string>();
   const recentlyPlayedIds = new Set<string>();
+
+  const accumulateFeatures = (track: any) => {
+    if (track.energy != null) { totalEnergy += track.energy; energyCount++; }
+    if (track.valence != null) { totalValence += track.valence; valenceCount++; }
+    if (track.danceability != null) { totalDanceability += track.danceability; danceabilityCount++; }
+    if (track.acousticness != null) { totalAcousticness += track.acousticness; acousticnessCount++; }
+    if (track.tempo != null) { totalTempo += track.tempo; tempoCount++; }
+  };
 
   likes.forEach((like: any) => {
     const track = like.Track;
@@ -58,11 +93,7 @@ export async function buildUserProfile(userId: string): Promise<UserProfile> {
       if (track.artistId) {
         artistPreferences.set(track.artistId, (artistPreferences.get(track.artistId) || 0) + 3);
       }
-      if (track.energy != null) { totalEnergy += track.energy; audioFeatureCount++; }
-      if (track.valence != null) totalValence += track.valence;
-      if (track.danceability != null) totalDanceability += track.danceability;
-      if (track.acousticness != null) totalAcousticness += track.acousticness;
-      if (track.tempo != null) totalTempo += track.tempo;
+      accumulateFeatures(track);
     }
   });
 
@@ -76,30 +107,26 @@ export async function buildUserProfile(userId: string): Promise<UserProfile> {
       if (track.artistId) {
         artistPreferences.set(track.artistId, (artistPreferences.get(track.artistId) || 0) + 1);
       }
-      if (track.energy != null) { totalEnergy += track.energy; audioFeatureCount++; }
-      if (track.valence != null) totalValence += track.valence;
-      if (track.danceability != null) totalDanceability += track.danceability;
-      if (track.acousticness != null) totalAcousticness += track.acousticness;
-      if (track.tempo != null) totalTempo += track.tempo;
+      accumulateFeatures(track);
     }
   });
-
-  const count = audioFeatureCount || 1;
 
   return {
     genrePreferences,
     artistPreferences,
-    avgEnergy: totalEnergy / count,
-    avgValence: totalValence / count,
-    avgDanceability: totalDanceability / count,
-    avgAcousticness: totalAcousticness / count,
-    avgTempo: totalTempo / count,
+    avgEnergy: energyCount > 0 ? totalEnergy / energyCount : 0,
+    avgValence: valenceCount > 0 ? totalValence / valenceCount : 0,
+    avgDanceability: danceabilityCount > 0 ? totalDanceability / danceabilityCount : 0,
+    avgAcousticness: acousticnessCount > 0 ? totalAcousticness / acousticnessCount : 0,
+    avgTempo: tempoCount > 0 ? totalTempo / tempoCount : 0,
     likedTrackIds,
     recentlyPlayedIds,
   };
 }
 
 function cosineSimilarity(a: number[], b: number[]): number {
+  if (!a || !b || a.length === 0 || b.length === 0 || a.length !== b.length) return 0;
+
   let dotProduct = 0;
   let normA = 0;
   let normB = 0;
@@ -147,61 +174,215 @@ function contentBasedScore(track: any, profile: UserProfile): number {
   const featureSimilarity = cosineSimilarity(trackFeatures, userProfileFeatures);
   score += featureSimilarity * 5;
 
-  score += Math.log1p(track.plays) * 0.5;
-  score += Math.log1p(track.likes) * 0.3;
-
   return score;
 }
 
-async function collaborativeScore(track: any, userId: string): Promise<number> {
-  const playHistory = await PlayHistory.findAll({
+async function batchCollaborativeScores(
+  trackIds: string[],
+  userId: string
+): Promise<Map<string, number>> {
+  const scores = new Map<string, number>();
+  trackIds.forEach((id) => scores.set(id, 0));
+
+  if (trackIds.length === 0) return scores;
+
+  const allPlayHistory = await PlayHistory.findAll({
     where: {
-      trackId: track.id,
+      trackId: { [Op.in]: trackIds },
       userId: { [Op.ne]: userId },
     },
-    limit: 50,
   });
 
-  if (playHistory.length === 0) return 0;
+  if (allPlayHistory.length === 0) return scores;
 
-  const userIds = [...new Set(playHistory.map((p: any) => p.userId))];
+  const userIds = [...new Set(allPlayHistory.map((p: any) => p.userId))];
 
-  const userInteractions = await PlayHistory.findAll({
+  const crossPlayCounts = new Map<string, number>();
+  allPlayHistory.forEach((p: any) => {
+    crossPlayCounts.set(p.trackId, (crossPlayCounts.get(p.trackId) || 0) + 1);
+  });
+
+  const allLikes = await Like.findAll({
     where: {
       userId: { [Op.in]: userIds },
-    },
-    limit: 200,
-  });
-
-  const trackPlayCounts = new Map<string, number>();
-  userInteractions.forEach((interaction: any) => {
-    trackPlayCounts.set(interaction.trackId, (trackPlayCounts.get(interaction.trackId) || 0) + 1);
-  });
-
-  const trackPopularity = trackPlayCounts.get(track.id) || 0;
-
-  let collaborativeScore = 0;
-
-  collaborativeScore += Math.log1p(trackPopularity) * 2;
-
-  const similarUserLikes = await Like.findAll({
-    where: {
-      userId: { [Op.in]: userIds },
-      trackId: track.id,
+      trackId: { [Op.in]: trackIds },
     },
   });
 
-  collaborativeScore += similarUserLikes.length * 1.5;
+  const likeCounts = new Map<string, number>();
+  allLikes.forEach((l: any) => {
+    likeCounts.set(l.trackId, (likeCounts.get(l.trackId) || 0) + 1);
+  });
 
-  collaborativeScore += (userIds.length / 20) * 3;
+  const trackUserCounts = new Map<string, Set<string>>();
+  allPlayHistory.forEach((p: any) => {
+    if (!trackUserCounts.has(p.trackId)) trackUserCounts.set(p.trackId, new Set());
+    trackUserCounts.get(p.trackId)!.add(p.userId);
+  });
 
-  return collaborativeScore;
+  for (const trackId of trackIds) {
+    let score = 0;
+    score += Math.log1p(crossPlayCounts.get(trackId) || 0) * 2;
+    score += (likeCounts.get(trackId) || 0) * 1.5;
+    score += ((trackUserCounts.get(trackId)?.size || 0) / 20) * 3;
+    scores.set(trackId, score);
+  }
+
+  return scores;
+}
+
+const COLD_START_THRESHOLD = 5;
+const MAX_PER_GENRE = 3;
+const MAX_PER_ARTIST = 2;
+const CONTENT_SCORE_CAP = 30;
+const COLLAB_SCORE_CAP = 5;
+const SVD_SCORE_CAP = 5;
+
+async function isColdStartUser(userId: string): Promise<boolean> {
+  const likeCount = await Like.count({ where: { userId } });
+  const historyCount = await PlayHistory.count({ where: { userId } });
+  return likeCount === 0 && historyCount < COLD_START_THRESHOLD;
+}
+
+async function buildGlobalProfile(): Promise<UserProfile> {
+  const allLikes = await Like.findAll({
+    include: [{
+      model: Track, as: 'Track',
+      attributes: ['id', 'genreId', 'artistId', 'energy', 'valence', 'danceability', 'acousticness', 'tempo'],
+    }],
+    limit: 1000,
+  });
+
+  const allHistory = await PlayHistory.findAll({
+    include: [{
+      model: Track, as: 'Track',
+      attributes: ['id', 'genreId', 'artistId', 'energy', 'valence', 'danceability', 'acousticness', 'tempo'],
+    }],
+    order: [['playedAt', 'DESC']],
+    limit: 1000,
+  });
+
+  const genrePreferences = new Map<string, number>();
+  const artistPreferences = new Map<string, number>();
+  let totalEnergy = 0, totalValence = 0, totalDanceability = 0, totalAcousticness = 0, totalTempo = 0;
+  let energyCount = 0, valenceCount = 0, danceabilityCount = 0, acousticnessCount = 0, tempoCount = 0;
+
+  const accumulate = (track: any) => {
+    if (track.energy != null) { totalEnergy += track.energy; energyCount++; }
+    if (track.valence != null) { totalValence += track.valence; valenceCount++; }
+    if (track.danceability != null) { totalDanceability += track.danceability; danceabilityCount++; }
+    if (track.acousticness != null) { totalAcousticness += track.acousticness; acousticnessCount++; }
+    if (track.tempo != null) { totalTempo += track.tempo; tempoCount++; }
+  };
+
+  allLikes.forEach((like: any) => {
+    const track = like.Track;
+    if (track) {
+      if (track.genreId) genrePreferences.set(track.genreId, (genrePreferences.get(track.genreId) || 0) + 3);
+      if (track.artistId) artistPreferences.set(track.artistId, (artistPreferences.get(track.artistId) || 0) + 3);
+      accumulate(track);
+    }
+  });
+
+  allHistory.forEach((play: any) => {
+    const track = play.Track;
+    if (track) {
+      if (track.genreId) genrePreferences.set(track.genreId, (genrePreferences.get(track.genreId) || 0) + 1);
+      if (track.artistId) artistPreferences.set(track.artistId, (artistPreferences.get(track.artistId) || 0) + 1);
+      accumulate(track);
+    }
+  });
+
+  return {
+    genrePreferences,
+    artistPreferences,
+    avgEnergy: energyCount > 0 ? totalEnergy / energyCount : 0,
+    avgValence: valenceCount > 0 ? totalValence / valenceCount : 0,
+    avgDanceability: danceabilityCount > 0 ? totalDanceability / danceabilityCount : 0,
+    avgAcousticness: acousticnessCount > 0 ? totalAcousticness / acousticnessCount : 0,
+    avgTempo: tempoCount > 0 ? totalTempo / tempoCount : 0,
+    likedTrackIds: new Set(),
+    recentlyPlayedIds: new Set(),
+  };
+}
+
+async function getColdStartRecommendations(
+  userId: string,
+  profile: UserProfile,
+  limit: number
+): Promise<any[]> {
+  const playedHistory = await PlayHistory.findAll({
+    where: { userId },
+    attributes: ['trackId'],
+  });
+  const playedTrackIds = new Set(playedHistory.map((h: any) => h.trackId));
+
+  const allTracks = await Track.findAll({
+    include: [
+      { model: Artist, as: 'Artist', attributes: ['id', 'name', 'image'] },
+      { model: Genre, as: 'Genre', attributes: ['id', 'name', 'slug'] },
+    ],
+    where: {
+      id: { [Op.notIn]: [...playedTrackIds] },
+    },
+    order: [['plays', 'DESC']],
+    limit: 100,
+  });
+
+  const scoredTracks = allTracks.map((track) => {
+    const contentScore = contentBasedScore(track, profile);
+    const popularityScore = Math.log1p(track.plays) * 0.5 + Math.log1p(track.likes) * 0.3;
+    const score = contentScore * 0.3 + popularityScore * 0.7;
+    return { track, score };
+  });
+
+  scoredTracks.sort((a, b) => b.score - a.score);
+
+  const genreCounts = new Map<string, number>();
+  const artistCounts = new Map<string, number>();
+  const diversified: typeof scoredTracks = [];
+
+  for (const item of scoredTracks) {
+    const genreId = item.track.genreId || '__none__';
+    const artistId = item.track.artistId || '__none__';
+
+    const gCount = genreCounts.get(genreId) || 0;
+    const aCount = artistCounts.get(artistId) || 0;
+
+    if (gCount < MAX_PER_GENRE && aCount < MAX_PER_ARTIST) {
+      diversified.push(item);
+      genreCounts.set(genreId, gCount + 1);
+      artistCounts.set(artistId, aCount + 1);
+      if (diversified.length >= limit) break;
+    }
+  }
+
+  if (diversified.length < limit) {
+    const selected = new Set(diversified.map((d) => d.track.id));
+    for (const item of scoredTracks) {
+      if (selected.has(item.track.id)) continue;
+      diversified.push(item);
+      if (diversified.length >= limit) break;
+    }
+  }
+
+  return diversified.map((st) => ({
+    ...st.track.toJSON(),
+    recommendationScore: st.score,
+  }));
 }
 
 export async function getHybridRecommendations(
   userId: string,
   limit: number = 20
 ): Promise<any[]> {
+  const coldStart = await isColdStartUser(userId);
+
+  if (coldStart) {
+    const globalProfile = await buildGlobalProfile();
+    return getColdStartRecommendations(userId, globalProfile, limit);
+  }
+
   const [profile, svdModel] = await Promise.all([
     buildUserProfile(userId),
     getSVDModel(),
@@ -223,30 +404,63 @@ export async function getHybridRecommendations(
     limit: 200,
   });
 
-  const scoredTracks = await Promise.all(
-    allTracks.map(async (track) => {
-      const contentScore = contentBasedScore(track, profile);
-      const collabScore = await collaborativeScore(track, userId);
-      const svdPrediction = svdScore(svdModel, userId, track.id);
+  const trackIds = allTracks.map((t: any) => t.id);
+  const collabScores = await batchCollaborativeScores(trackIds, userId);
 
-      const hybridScore =
-        contentScore * 0.4 +
-        collabScore * 0.2 +
-        svdPrediction * 4;
+  const scoredTracks = allTracks.map((track) => {
+    const contentScore = contentBasedScore(track, profile);
+    const collabScore = collabScores.get(track.id) || 0;
+    const svdPrediction = svdScore(svdModel, userId, track.id);
 
-      return {
-        track,
-        score: hybridScore,
-        contentScore,
-        collabScore,
-        svdPrediction,
-      };
-    })
-  );
+    const normalizedContent = Math.min(contentScore / CONTENT_SCORE_CAP, 1);
+    const normalizedCollab = Math.min(collabScore / COLLAB_SCORE_CAP, 1);
+    const normalizedSvd = Math.min(svdPrediction / SVD_SCORE_CAP, 1);
+
+    const hybridScore =
+      normalizedContent * 0.4 +
+      normalizedCollab * 0.2 +
+      normalizedSvd * 0.4;
+
+    return {
+      track,
+      score: hybridScore,
+      contentScore,
+      collabScore,
+      svdPrediction,
+    };
+  });
 
   scoredTracks.sort((a, b) => b.score - a.score);
 
-  return scoredTracks.slice(0, limit).map((st) => ({
+  const genreCounts = new Map<string, number>();
+  const artistCounts = new Map<string, number>();
+  const diversified: typeof scoredTracks = [];
+
+  for (const item of scoredTracks) {
+    const genreId = item.track.genreId || '__none__';
+    const artistId = item.track.artistId || '__none__';
+
+    const gCount = genreCounts.get(genreId) || 0;
+    const aCount = artistCounts.get(artistId) || 0;
+
+    if (gCount < MAX_PER_GENRE && aCount < MAX_PER_ARTIST) {
+      diversified.push(item);
+      genreCounts.set(genreId, gCount + 1);
+      artistCounts.set(artistId, aCount + 1);
+      if (diversified.length >= limit) break;
+    }
+  }
+
+  if (diversified.length < limit) {
+    const selected = new Set(diversified.map((d) => d.track.id));
+    for (const item of scoredTracks) {
+      if (selected.has(item.track.id)) continue;
+      diversified.push(item);
+      if (diversified.length >= limit) break;
+    }
+  }
+
+  return diversified.map((st) => ({
     ...st.track.toJSON(),
     recommendationScore: st.score,
   }));
@@ -264,13 +478,18 @@ export async function getSimilarTracks(trackId: string, limit: number = 10): Pro
 
   const targetFeatures = calculateAudioFeatureVector(targetTrack);
 
+  const orConditions: any[] = [];
+  if (targetTrack.artistId) {
+    orConditions.push({ artistId: targetTrack.artistId });
+  }
+  if (targetTrack.genreId) {
+    orConditions.push({ genreId: targetTrack.genreId });
+  }
+
   const candidates = await Track.findAll({
     where: {
       id: { [Op.ne]: trackId },
-      [Op.or]: [
-        { genreId: targetTrack.genreId },
-        { artistId: targetTrack.artistId },
-      ],
+      ...(orConditions.length > 0 ? { [Op.or]: orConditions } : {}),
     },
     include: [
       { model: Artist, as: 'Artist', attributes: ['id', 'name', 'image'] },

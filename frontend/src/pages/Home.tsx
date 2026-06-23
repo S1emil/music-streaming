@@ -14,7 +14,7 @@ const Home: React.FC = () => {
     <div className="home-page">
       <section className="hero">
         <div className="hero-content">
-          <h1>Добро пожаловать в MusicStream</h1>
+          <h1>Добро пожаловать в Wavve</h1>
           <p>Слушайте миллионы треков. Наслаждайтесь музыкой где угодно.</p>
           {user ? (
             <Link to="/library" className="btn btn-primary btn-lg">

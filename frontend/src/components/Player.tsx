@@ -19,6 +19,7 @@ const Player: React.FC<PlayerBarProps> = ({ onExpand }) => {
   } = usePlayer();
 
   const [isMuted, setIsMuted] = React.useState(false);
+  const prevVolumeRef = React.useRef(0.7);
 
   if (!currentTrack) return null;
 
@@ -112,7 +113,15 @@ const Player: React.FC<PlayerBarProps> = ({ onExpand }) => {
       </div>
 
       <div className="player-volume">
-        <button type="button" className="player-btn" onClick={() => { setVolume(isMuted ? 0.7 : 0); setIsMuted(!isMuted); }}>
+        <button type="button" className="player-btn" onClick={() => {
+          if (isMuted) {
+            setVolume(prevVolumeRef.current);
+          } else {
+            prevVolumeRef.current = volume;
+            setVolume(0);
+          }
+          setIsMuted(!isMuted);
+        }}>
           {isMuted || volume === 0 ? <FiVolumeX size={18} /> : <FiVolume2 size={18} />}
         </button>
         <input

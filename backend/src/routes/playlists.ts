@@ -3,6 +3,7 @@ import { AuthRequest, authenticate, optionalAuth } from '../middleware/auth';
 import { Playlist, Track, Artist, User } from '../models';
 import PlaylistTrack from '../models/PlaylistTrack';
 import { generatePlaylist } from '../services/playlistGenerator';
+import sequelize from '../db/connection';
 
 const router = Router();
 
@@ -57,20 +58,24 @@ router.post('/generate/save', authenticate, async (req: AuthRequest, res: Respon
       return res.status(400).json({ error: 'Name and trackIds are required' });
     }
 
-    const playlist = await Playlist.create({
-      name,
-      description: description || null,
-      userId: req.user!.id,
-      isPublic: false,
-    });
+    const playlist = await sequelize.transaction(async (t) => {
+      const pl = await Playlist.create({
+        name,
+        description: description || null,
+        userId: req.user!.id,
+        isPublic: false,
+      }, { transaction: t });
 
-    for (let i = 0; i < trackIds.length; i++) {
-      await PlaylistTrack.create({
-        playlistId: playlist.id,
-        trackId: trackIds[i],
-        position: i + 1,
-      });
-    }
+      for (let i = 0; i < trackIds.length; i++) {
+        await PlaylistTrack.create({
+          playlistId: pl.id,
+          trackId: trackIds[i],
+          position: i + 1,
+        }, { transaction: t });
+      }
+
+      return pl;
+    });
 
     const fullPlaylist = await Playlist.findByPk(playlist.id, {
       include: [
@@ -204,6 +209,13 @@ router.post('/:id/tracks', authenticate, async (req: AuthRequest, res: Response)
     const track = await Track.findByPk(trackId);
     if (!track) {
       return res.status(404).json({ error: 'Track not found' });
+    }
+
+    const existing = await PlaylistTrack.findOne({
+      where: { playlistId: playlist.id, trackId },
+    });
+    if (existing) {
+      return res.status(409).json({ error: 'Track already in playlist' });
     }
 
     const maxPosition = await PlaylistTrack.max('position', {

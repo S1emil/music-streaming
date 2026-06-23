@@ -22,9 +22,12 @@ const Radio: React.FC = () => {
       if (genreId) params.genre = genreId;
       const result = await fetch(`/api/search/radio${genreId ? `?genre=${genreId}` : ''}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
-      }).then((r) => r.json());
-      setTracks(result);
+      });
+      if (!result.ok) throw new Error('Failed to load radio');
+      const data = await result.json();
+      setTracks(Array.isArray(data) ? data : []);
     } catch {
+      setTracks([]);
     } finally {
       setLoading(false);
     }

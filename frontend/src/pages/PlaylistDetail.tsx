@@ -1,15 +1,17 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { playlists as playlistsApi, tracks as tracksApi } from '../services';
+import { playlists as playlistsApi } from '../services';
 import { Playlist } from '../types';
 import TrackCard from '../components/TrackCard';
 import { useAuth } from '../context/AuthContext';
+import { usePlayer } from '../context/PlayerContext';
 import toast from 'react-hot-toast';
 import { FiPlay, FiTrash2, FiEdit2 } from 'react-icons/fi';
 
 const PlaylistDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { play } = usePlayer();
   const navigate = useNavigate();
   const [playlist, setPlaylist] = React.useState<Playlist | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -35,7 +37,7 @@ const PlaylistDetail: React.FC = () => {
 
   const handlePlayAll = () => {
     if (playlist?.Tracks && playlist.Tracks.length > 0) {
-      tracksApi.play(playlist.Tracks[0].id);
+      play(playlist.Tracks[0], playlist.Tracks);
     }
   };
 

@@ -1,4 +1,4 @@
-# MusicStream
+# Wavve
 
 A full-featured music streaming service built with React and Node.js.
 

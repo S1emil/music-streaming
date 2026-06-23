@@ -84,7 +84,7 @@ const FullScreenPlayer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     currentTrack, isPlaying, progress, duration, volume,
     repeat, shuffle, pause, resume, next, previous,
     seek, setVolume, toggleRepeat, toggleShuffle, queue,
-    playFromQueue, currentIndex, addToQueue,
+    playFromQueue, currentIndex, addToQueue, play,
     analyserNode, showVisualizer, toggleVisualizer,
   } = usePlayer();
   const { user } = useAuth();
@@ -93,6 +93,7 @@ const FullScreenPlayer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [showQueue, setShowQueue] = React.useState(false);
   const [showInfo, setShowInfo] = React.useState(false);
   const [isMuted, setIsMuted] = React.useState(false);
+  const prevVolumeRef = React.useRef(0.7);
   const [similarTracks, setSimilarTracks] = React.useState<Track[]>([]);
   const [loadingSimilar, setLoadingSimilar] = React.useState(false);
 
@@ -231,7 +232,15 @@ const FullScreenPlayer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
 
         <div className="fullscreen-volume">
-          <button type="button" className="ctrl-btn-sm" onClick={() => { setVolume(isMuted ? 0.7 : 0); setIsMuted(!isMuted); }}>
+          <button type="button" className="ctrl-btn-sm" onClick={() => {
+            if (isMuted) {
+              setVolume(prevVolumeRef.current);
+            } else {
+              prevVolumeRef.current = volume;
+              setVolume(0);
+            }
+            setIsMuted(!isMuted);
+          }}>
             {isMuted || volume === 0 ? <FiVolumeX size={18} /> : <FiVolume2 size={18} />}
           </button>
           <input
@@ -331,7 +340,14 @@ const FullScreenPlayer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     <div
                       key={t.id}
                       className="similar-item"
-                      onClick={() => playFromQueue(queue.findIndex((q) => q.id === t.id) !== -1 ? queue.findIndex((q) => q.id === t.id) : 0)}
+                      onClick={() => {
+                        const idx = queue.findIndex((q) => q.id === t.id);
+                        if (idx !== -1) {
+                          playFromQueue(idx);
+                        } else {
+                          play(t, [t, ...similarTracks.filter((s) => s.id !== t.id)]);
+                        }
+                      }}
                     >
                       <div className="similar-cover">
                         {t.coverUrl ? (

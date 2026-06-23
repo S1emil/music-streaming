@@ -39,7 +39,9 @@ export async function getUserStats(userId: string) {
             themeCounts[theme] = (themeCounts[theme] || 0) + 1;
           }
         }
-      } catch {}
+      } catch {
+        // themes is not valid JSON, skip
+      }
     }
   }
 

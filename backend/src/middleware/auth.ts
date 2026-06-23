@@ -19,7 +19,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
     const user = await User.findByPk(decoded.id, {
       attributes: ['id', 'username', 'email', 'role'],
     });
@@ -46,7 +46,7 @@ export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFu
     const token = req.headers.authorization?.replace('Bearer ', '');
 
     if (token) {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
       const user = await User.findByPk(decoded.id, {
         attributes: ['id', 'username', 'email', 'role'],
       });

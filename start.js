@@ -24,14 +24,14 @@ function startFrontend() {
 }
 
 console.log('\x1b[35m╔══════════════════════════════════════╗\x1b[0m');
-console.log('\x1b[35m║      MusicStream - Starting...       ║\x1b[0m');
+console.log('\x1b[35m║        Wavve - Starting...            ║\x1b[0m');
 console.log('\x1b[35m╚══════════════════════════════════════╝\x1b[0m');
 
 const backend = startBackend();
 const frontend = startFrontend();
 
 process.on('SIGINT', () => {
-  console.log('\n\x1b[33m[MusicStream]\x1b[0m Shutting down...');
+  console.log('\n\x1b[33m[Wavve]\x1b[0m Shutting down...');
   backend.kill('SIGINT');
   frontend.kill('SIGINT');
   process.exit(0);

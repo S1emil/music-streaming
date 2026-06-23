@@ -6,7 +6,7 @@ interface ThemeResult {
 
 const THEME_KEYWORDS: Record<string, string[]> = {
   'love': ['любовь', 'люблю', 'любишь', 'влюблён', 'влюблена', 'любимый', 'любимая', 'обнимаю', 'обнять', 'поцелуй', 'обниму', 'heart', 'love', 'kiss', 'embrace', 'adore', 'devoted'],
-  'breakup': ['расставание', 'прощай', 'прощай', 'уходишь', 'уходи', 'уходила', 'уходил', 'рассталась', 'расстался', 'broken', 'goodbye', 'leave', 'left', 'gone', 'walk away'],
+  'breakup': ['расставание', 'прощай', 'уходишь', 'уходи', 'уходила', 'уходил', 'рассталась', 'расстался', 'broken', 'goodbye', 'leave', 'left', 'gone', 'walk away'],
   'friendship': ['друг', 'друзья', 'дружба', 'дружим', 'побратим', 'команда', 'брат', 'братан', 'братишка', 'bro', 'friend', 'friends', 'friendship', 'together', 'buddy', 'pal'],
   'sadness': ['грустно', 'грусть', 'печаль', 'печально', 'тоскую', 'тоска', 'печалит', 'грустный', 'грустная', 'sad', 'sorrow', 'sorrowful', 'unhappy', 'melancholy', 'blue'],
   'joy': ['радость', 'счастье', 'счастлив', 'счастлива', 'весело', 'веселье', 'улыбка', 'улыбнись', 'праздник', 'happy', 'joy', 'joyful', 'smile', 'celebrate', 'cheerful'],
@@ -16,7 +16,7 @@ const THEME_KEYWORDS: Record<string, string[]> = {
   'nature': ['море', 'океан', 'река', 'гора', 'горы', 'лес', 'поле', 'цветок', 'ветер', 'небо', 'звезда', 'луна', 'рассвет', 'закат', 'sea', 'ocean', 'mountain', 'forest', 'river', 'sunset', 'sunrise', 'moon', 'stars', 'wind'],
   'nostalgia': ['ностальгия', 'вспоминаю', 'воспоминание', 'воспоминания', 'детство', 'прошлое', 'когда-то', 'бывало', 'было', 'nostalgia', 'remember', 'memories', 'past', 'childhood', '回忆'],
   'melancholy': ['туман', 'туманный', 'серый', 'серость', 'пустота', 'пустой', 'одинок', 'одиноко', 'одинокий', 'одинокая', 'забыть', 'забыл', 'забыла', 'fog', 'grey', 'gray', 'empty', 'alone', 'lonely', 'silence', 'silent'],
-  'hope': ['надежда', 'надежды', 'верю', 'поверю', 'надеюсь', 'завтра', 'будущее', 'рассвет', 'рассвет', 'утро', 'hope', 'believe', 'believe', 'tomorrow', 'dawn', 'morning', 'promising'],
+  'hope': ['надежда', 'надежды', 'верю', 'поверю', 'надеюсь', 'завтра', 'будущее', 'рассвет', 'утро', 'hope', 'believe', 'tomorrow', 'dawn', 'morning', 'promising'],
   'anxiety': ['тревога', 'тревожно', 'страх', 'страшно', 'паника', 'беспокойство', 'тревожит', 'anxiety', 'fear', 'afraid', 'worried', 'panic', 'dread'],
   'loneliness': ['один', 'одна', 'одинокий', 'одинокая', 'одиноко', 'одиночество', 'без тебя', 'без него', 'без неё', 'alone', 'lonely', 'solitary', 'by myself', 'nobody'],
   'passion': ['страсть', 'страсти', 'жар', 'гореть', 'пламя', 'огонь', 'пыл', 'passion', 'desire', 'burn', 'fire', 'flame', 'hot', 'intense'],
@@ -36,9 +36,9 @@ const MOOD_KEYWORDS: Record<string, string[]> = {
 };
 
 const SYNONYM_GROUPS: Record<string, string[]> = {
-  'sadness': ['печаль', 'тоска', 'уныние', 'меланхолия', 'печаль', 'горе', 'слёзы', 'грустно', 'грустный', 'печальный', 'тоскливый', 'унылый', 'sad', 'sorrow', 'melancholy', 'grief', 'unhappy', 'blue'],
+  'sadness': ['печаль', 'тоска', 'уныние', 'меланхолия', 'горе', 'слёзы', 'грустно', 'грустный', 'печальный', 'тоскливый', 'унылый', 'sad', 'sorrow', 'melancholy', 'grief', 'unhappy', 'blue'],
   'joy': ['счастье', 'веселье', 'весело', 'ликование', 'восторг', 'улыбка', 'смех', 'весёлый', 'радостный', 'счастливый', 'happy', 'joy', 'cheerful', 'delight', 'pleasure', 'fun'],
-  'love': ['влюблённость', 'романтика', 'нежность', 'страсть', 'обожание', 'привязанность', ' сердце', 'love', 'romance', 'passion', 'affection', 'devotion', 'crush'],
+  'love': ['влюблённость', 'романтика', 'нежность', 'страсть', 'обожание', 'привязанность', 'сердце', 'love', 'romance', 'passion', 'affection', 'devotion', 'crush'],
   'loneliness': ['уединение', 'изоляция', 'одинокий', 'покинутость', 'заброшенность', 'одиночество', 'один', 'одна', 'alone', 'lonely', 'solitary', 'isolated', 'abandoned'],
   'freedom': ['свободный', 'независимость', 'вольный', 'раскрепощённый', 'свобода', 'freedom', 'free', 'liberty', 'independent', 'unbound', 'liberated'],
   'life': ['существование', 'бытие', 'жизнь', 'жить', 'смысл жизни', 'life', 'existence', 'living', 'being', 'purpose'],
@@ -49,6 +49,7 @@ const SYNONYM_GROUPS: Record<string, string[]> = {
 };
 
 function normalizeText(text: string): string {
+  if (!text) return '';
   return text.toLowerCase()
     .replace(/[^a-zа-яё0-9\s]/g, ' ')
     .replace(/\s+/g, ' ')
@@ -72,7 +73,9 @@ function countMatches(text: string, keywords: string[]): number {
       if (text.includes(kw.replace('_', ''))) count += 3;
     } else {
       const kwStem = stemWord(kw);
+      if (!kwStem) continue;
       for (let i = 0; i < words.length; i++) {
+        if (!stems[i]) continue;
         if (words[i] === kw || stems[i] === kwStem || words[i].startsWith(kwStem) || kwStem.startsWith(stems[i])) {
           count++;
           break;

@@ -9,10 +9,14 @@ const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || '7d') as jwt.SignOptions['
 
 router.post('/register', async (req: AuthRequest, res: Response) => {
   try {
-    const { username, email, password, displayName, role } = req.body;
+    const { username, email, password, displayName } = req.body;
 
     if (!username || !email || !password || !displayName) {
       return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
     const existingUser = await User.findOne({ where: { email } });
@@ -25,12 +29,11 @@ router.post('/register', async (req: AuthRequest, res: Response) => {
       return res.status(409).json({ error: 'Username already taken' });
     }
 
-    const userRole = role === 'artist' ? 'artist' : 'user';
-    const user = await User.create({ username, email, password, displayName, role: userRole });
+    const user = await User.create({ username, email, password, displayName, role: 'user' });
 
     const token = jwt.sign(
       { id: user.id, username: user.username, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'secret',
+      process.env.JWT_SECRET!,
       { expiresIn: JWT_EXPIRES_IN }
     );
 
@@ -70,7 +73,7 @@ router.post('/login', async (req: AuthRequest, res: Response) => {
 
     const token = jwt.sign(
       { id: user.id, username: user.username, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'secret',
+      process.env.JWT_SECRET!,
       { expiresIn: JWT_EXPIRES_IN }
     );
 

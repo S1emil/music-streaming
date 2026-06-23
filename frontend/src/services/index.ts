@@ -21,7 +21,7 @@ export const tracks = {
     api.post<Track>('/api/tracks', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then((r) => r.data),
-  play: (id: string) => api.post(`/api/tracks/${id}/play`).then((r) => r.data),
+  play: (id: string, progress?: number) => api.post(`/api/tracks/${id}/play`, progress != null ? { progress } : undefined).then((r) => r.data),
   like: (id: string) => api.post(`/api/tracks/${id}/like`).then((r) => r.data),
   delete: (id: string) => api.delete(`/api/tracks/${id}`).then((r) => r.data),
   update: (id: string, data: { title?: string; lyrics?: string; coverUrl?: string; genreId?: string; genreIds?: string; explicit?: boolean }) =>

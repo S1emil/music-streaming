@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { playlists as playlistsApi } from '../services';
 import { Playlist } from '../types';
 
@@ -6,6 +6,7 @@ export const usePlaylists = (type: 'my' | 'public' = 'my') => {
   const [data, setData] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const fetchPlaylists = async () => {
@@ -21,7 +22,9 @@ export const usePlaylists = (type: 'my' | 'public' = 'my') => {
     };
 
     fetchPlaylists();
-  }, [type]);
+  }, [type, refreshKey]);
 
-  return { data, loading, error, refetch: () => setLoading(true) };
+  const refetch = useCallback(() => setRefreshKey((k) => k + 1), []);
+
+  return { data, loading, error, refetch };
 };

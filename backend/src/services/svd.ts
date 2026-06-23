@@ -1,3 +1,6 @@
+import PlayHistory from '../models/PlayHistory';
+import Like from '../models/Like';
+
 export interface SVDModel {
   userFactors: Map<string, number[]>;
   itemFactors: Map<string, number[]>;
@@ -65,7 +68,7 @@ function trainSVD(
   lr: number,
   lambda: number,
   iterations: number
-): { P: number[][]; Q: number[][] } {
+): { P: number[][]; Q: number[][]; globalMean: number } {
   const m = matrix.length;
   const n = matrix[0].length;
 
@@ -116,11 +119,8 @@ function trainSVD(
     }
   }
 
-  return { P, Q };
+  return { P, Q, globalMean };
 }
-
-import PlayHistory from '../models/PlayHistory';
-import Like from '../models/Like';
 
 export async function buildSVDModel(): Promise<SVDModel | null> {
   const allHistory = await PlayHistory.findAll({
@@ -169,15 +169,7 @@ export async function buildSVDModel(): Promise<SVDModel | null> {
   const k = Math.min(DEFAULT_K, Math.min(users.length, items.length) - 1);
   if (k < 1) return null;
 
-  const { P, Q } = trainSVD(matrix, k, DEFAULT_LEARNING_RATE, DEFAULT_REGULARIZATION, DEFAULT_ITERATIONS);
-
-  let totalSum = 0;
-  let totalCount = 0;
-  for (const inter of interactions) {
-    totalSum += inter.rating;
-    totalCount++;
-  }
-  const globalMean = totalCount > 0 ? totalSum / totalCount : 0;
+  const { P, Q, globalMean } = trainSVD(matrix, k, DEFAULT_LEARNING_RATE, DEFAULT_REGULARIZATION, DEFAULT_ITERATIONS);
 
   const userFactors = new Map<string, number[]>();
   const itemFactors = new Map<string, number[]>();
@@ -201,7 +193,7 @@ export function predictScore(model: SVDModel, userId: string, trackId: string): 
     score += userVec[f] * itemVec[f];
   }
 
-  return Math.max(0, score);
+  return Math.min(5, Math.max(0, score));
 }
 
 export function svdScore(model: SVDModel | null, userId: string, trackId: string): number {

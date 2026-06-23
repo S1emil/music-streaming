@@ -20,7 +20,7 @@ const Header: React.FC = () => {
       <div className="header-left">
         <Link to="/" className="logo">
           <FiMusic size={24} />
-          <span>MusicStream</span>
+          <span>Wavve</span>
         </Link>
       </div>
 

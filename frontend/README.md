@@ -1,6 +1,6 @@
 # Frontend
 
-React frontend for MusicStream.
+React frontend for Wavve.
 
 ## Setup
 

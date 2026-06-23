@@ -20,6 +20,11 @@ const TrackCard: React.FC<TrackCardProps> = ({ track, tracks, showIndex, index }
   const [likeCount, setLikeCount] = React.useState(track.likes);
   const [showPlaylistModal, setShowPlaylistModal] = React.useState(false);
 
+  React.useEffect(() => {
+    setLiked(track.isLiked || false);
+    setLikeCount(track.likes);
+  }, [track.id, track.isLiked, track.likes]);
+
   const isCurrentTrack = currentTrack?.id === track.id;
 
   const handlePlay = () => {

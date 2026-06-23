@@ -35,7 +35,7 @@ const Search: React.FC = () => {
     return (
       <div className="search-page">
         <div className="search-empty">
-          <h2>Поиск в MusicStream</h2>
+          <h2>Поиск в Wavve</h2>
           <p>Найдите любимые треки, артистов и плейлисты</p>
           <p className="search-hint">Попробуйте: «грустная песня о любви», «дружба», «смысл жизни»</p>
         </div>

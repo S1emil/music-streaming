@@ -2,9 +2,8 @@ import { Router, Response } from 'express';
 import { AuthRequest, authenticate, optionalAuth } from '../middleware/auth';
 import { Track, Artist, Genre, Album, User, Playlist, PlayHistory, TrackGenre, Like } from '../models';
 import { Op, literal } from 'sequelize';
-import { getHybridRecommendations, getSimilarTracks } from '../services/recommendations';
+import { getHybridRecommendations, getSimilarTracks, getSVDModel } from '../services/recommendations';
 import { buildSearchVector, semanticScore } from '../services/themes';
-import { buildSVDModel } from '../services/svd';
 
 const router = Router();
 
@@ -90,7 +89,8 @@ router.get('/genres', async (req: AuthRequest, res: Response) => {
 router.get('/recommendations', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { limit = 20 } = req.query;
-    const recommendations = await getHybridRecommendations(req.user!.id, parseInt(limit as string));
+    const limitNum = Math.min(Math.max(parseInt(limit as string) || 20, 1), 50);
+    const recommendations = await getHybridRecommendations(req.user!.id, limitNum);
     res.json(recommendations);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -100,7 +100,8 @@ router.get('/recommendations', authenticate, async (req: AuthRequest, res: Respo
 router.get('/similar/:trackId', optionalAuth, async (req: AuthRequest, res: Response) => {
   try {
     const { limit = 10 } = req.query;
-    const similar = await getSimilarTracks(req.params.trackId, parseInt(limit as string));
+    const limitNum = Math.min(Math.max(parseInt(limit as string) || 10, 1), 50);
+    const similar = await getSimilarTracks(req.params.trackId, limitNum);
     res.json(similar);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -148,16 +149,21 @@ router.get('/semantic', optionalAuth, async (req: AuthRequest, res: Response) =>
 
     const allTracks = await Track.findAll({
       where: {
-        themes: { [Op.ne]: '[]' },
+        themes: { [Op.ne]: null },
       },
       include: [
         { model: Artist, as: 'Artist', attributes: ['id', 'name', 'image'] },
         { model: Genre, as: 'Genre', attributes: ['id', 'name', 'slug'] },
       ],
-      limit: 200,
+      limit: 300,
     });
 
-    const scoredTracks = allTracks.map((track: any) => {
+    const scoredTracks = allTracks
+      .filter((track: any) => {
+        const themes = track.themes;
+        return Array.isArray(themes) && themes.length > 0;
+      })
+      .map((track: any) => {
       const trackThemes = track.themes || [];
       const trackMood = track.mood || '';
       const score = semanticScore(trackThemes, trackMood, searchWords);
@@ -184,13 +190,13 @@ router.get('/svd-stats', authenticate, async (req: AuthRequest, res: Response) =
     const historyCount = await PlayHistory.count();
     const likeCount = await Like.count();
 
-    const model = await buildSVDModel();
+    const model = await getSVDModel();
 
     res.json({
       users: userCount,
       tracks: trackCount,
       interactions: historyCount + likeCount,
-      matrixSparsity: model
+      matrixSparsity: model && userCount > 0 && trackCount > 0
         ? `${((1 - (historyCount + likeCount) / (userCount * trackCount)) * 100).toFixed(1)}%`
         : 'N/A',
       latentFactors: model?.k || 0,

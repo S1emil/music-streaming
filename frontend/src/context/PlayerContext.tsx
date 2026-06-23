@@ -51,6 +51,7 @@ export const PlayerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [repeat, setRepeat] = useState<'off' | 'one' | 'once'>('off');
   const [shuffle, setShuffle] = useState(false);
   const [showVisualizer, setShowVisualizer] = useState(false);
+  const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
 
   const currentIndexRef = useRef(0);
 
@@ -86,6 +87,7 @@ export const PlayerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         ctx.resume();
       }
 
+      setAnalyserNode(analyserRef.current);
       return analyserRef.current;
     } catch {
       return null;
@@ -298,6 +300,13 @@ export const PlayerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     return () => audio.removeEventListener('timeupdate', handler);
   }, []);
 
+  // sync volume on mount
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, []);
+
   // ended — переприкрепляется при смене repeat/shuffle, чтобы читать актуальные значения
   useEffect(() => {
     const audio = audioRef.current;
@@ -327,7 +336,13 @@ export const PlayerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       let nextIndex = currentIndexRef.current + 1;
 
       if (shuffle) {
-        nextIndex = Math.floor(Math.random() * queue.length);
+        if (queue.length === 1) {
+          nextIndex = 0;
+        } else {
+          do {
+            nextIndex = Math.floor(Math.random() * queue.length);
+          } while (nextIndex === currentIndexRef.current);
+        }
       } else if (nextIndex >= queue.length) {
         setIsPlaying(false);
         return;
@@ -355,7 +370,7 @@ export const PlayerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         repeat, shuffle, play, pause, resume, next, previous,
         seek, setVolume, toggleRepeat, toggleShuffle,
         addToQueue, removeFromQueue, playFromQueue, clearQueue,
-        analyserNode: analyserRef.current, showVisualizer, toggleVisualizer,
+        analyserNode, showVisualizer, toggleVisualizer,
       }}
     >
       {children}

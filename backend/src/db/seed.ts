@@ -74,6 +74,26 @@ async function seed() {
     const createdArtists = await Artist.bulkCreate(sampleArtists);
     console.log(`Created ${createdArtists.length} artists`);
 
+    const createdTracks: any[] = [];
+    for (const track of sampleTracks) {
+      const artist = createdArtists[track.artistIdx];
+      const genre = createdGenres.find((g: any) => g.slug === track.genreSlug);
+      if (artist) {
+        const t = await Track.create({
+          title: track.title,
+          artistId: artist.id,
+          genreId: genre?.id || null,
+          duration: track.duration,
+          filePath: '/uploads/music/placeholder.mp3',
+          uploadedBy: admin.id,
+          plays: Math.floor(Math.random() * 5000),
+          likes: Math.floor(Math.random() * 200),
+        });
+        createdTracks.push(t);
+      }
+    }
+    console.log(`Created ${createdTracks.length} tracks`);
+
     console.log('\nSeed completed!');
     console.log('Admin login: admin@musicstream.com / admin123');
     process.exit(0);

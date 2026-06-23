@@ -37,7 +37,10 @@ const Profile: React.FC = () => {
     }
   };
 
-  if (!user) return <div className="loading">Загрузка...</div>;
+  if (!user) {
+    navigate('/login');
+    return null;
+  }
 
   return (
     <div className="profile-page">
