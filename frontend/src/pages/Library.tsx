@@ -5,12 +5,12 @@ import { usePlaylists } from '../hooks/usePlaylists';
 import PlaylistCard from '../components/PlaylistCard';
 import { playlists as playlistsApi } from '../services';
 import toast from 'react-hot-toast';
-import { FiPlus, FiHeart } from 'react-icons/fi';
+import { FiPlus, FiHeart, FiTrash2 } from 'react-icons/fi';
 
 const Library: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { data: playlists, loading: playlistsLoading } = usePlaylists('my');
+  const { data: playlists, loading: playlistsLoading, refetch } = usePlaylists('my');
 
   const likedPlaylist = playlists.find((p: any) => p.isSystem);
   const userPlaylists = playlists.filter((p: any) => !p.isSystem);
@@ -25,6 +25,17 @@ const Library: React.FC = () => {
       navigate(`/playlist/${playlist.id}`);
     } catch (error) {
       toast.error('Не удалось создать плейлист');
+    }
+  };
+
+  const handleDeletePlaylist = async (id: string, name: string) => {
+    if (!confirm(`Удалить плейлист "${name}"?`)) return;
+    try {
+      await playlistsApi.delete(id);
+      refetch();
+      toast.success('Плейлист удалён');
+    } catch {
+      toast.error('Не удалось удалить плейлист');
     }
   };
 
@@ -71,7 +82,16 @@ const Library: React.FC = () => {
         ) : (
           <div className="playlists-grid">
             {userPlaylists.map((playlist) => (
-              <PlaylistCard key={playlist.id} playlist={playlist} />
+              <div key={playlist.id} className="playlist-card-wrapper">
+                <PlaylistCard playlist={playlist} />
+                <button
+                  className="playlist-delete-btn"
+                  onClick={(e) => { e.preventDefault(); handleDeletePlaylist(playlist.id, playlist.name); }}
+                  title="Удалить плейлист"
+                >
+                  <FiTrash2 size={14} />
+                </button>
+              </div>
             ))}
             {userPlaylists.length === 0 && (
               <p className="no-data">Пока нет плейлистов. Создайте первый!</p>

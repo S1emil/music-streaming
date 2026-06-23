@@ -1087,6 +1087,37 @@ img {
   background: var(--bg-elevated);
 }
 
+.playlist-card-wrapper {
+  position: relative;
+}
+
+.playlist-delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition-fast), background var(--transition-fast);
+  z-index: 1;
+}
+
+.playlist-card-wrapper:hover .playlist-delete-btn {
+  opacity: 1;
+}
+
+.playlist-delete-btn:hover {
+  background: var(--danger);
+}
+
 .playlist-cover {
   aspect-ratio: 1;
   border-radius: 4px;
