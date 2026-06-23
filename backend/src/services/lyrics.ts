@@ -88,25 +88,30 @@ export async function fetchLyricsFromGenius(songUrl: string): Promise<string> {
 }
 
 export async function fetchLyricsBySearch(artist: string, title: string): Promise<GeniusLyricsResult> {
-  const searchQuery = `${artist} ${title}`;
-  const results = await searchGenius(searchQuery);
+  try {
+    const response = await axios.get('https://lrclib.net/api/search', {
+      params: { artist_name: artist, track_name: title },
+    });
 
-  if (results.length === 0) {
-    throw new Error('No results found on Genius');
+    const results = response.data || [];
+    if (results.length === 0) {
+      throw new Error('Текст песни не найден');
+    }
+
+    const bestMatch = results.find((r: any) => r.syncedLyrics) || results[0];
+    const lyrics = bestMatch.syncedLyrics || bestMatch.plainLyrics;
+
+    if (!lyrics) {
+      throw new Error('Текст песни не найден');
+    }
+
+    return { lyrics, source: 'genius' };
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      throw new Error('Текст песни не найден');
+    }
+    throw error;
   }
-
-  const bestMatch = results.find(
-    (r) =>
-      r.artist_name.toLowerCase().includes(artist.toLowerCase()) ||
-      r.title.toLowerCase().includes(title.toLowerCase())
-  ) || results[0];
-
-  const lyrics = await fetchLyricsFromGenius(bestMatch.url);
-
-  return {
-    lyrics,
-    source: 'genius',
-  };
 }
 
 export function generateKeywords(text: string): string[] {
