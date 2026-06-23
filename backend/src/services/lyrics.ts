@@ -106,7 +106,7 @@ export async function fetchLyricsBySearch(artist: string, title: string): Promis
     }
 
     if (bestMatch.syncedLyrics) {
-      lyrics = lyrics.replace(/^\[\d{2}:\d{2}\.\d{2,3}\]\s?/gm, '');
+      lyrics = lyrics.replace(/\[\d{2}:\d{2}[.:]\d{2,3}\]\s?/g, '');
     }
 
     return { lyrics, source: 'genius' };
