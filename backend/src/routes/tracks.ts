@@ -47,6 +47,16 @@ router.get('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       offset: Math.max(parseInt(offset as string) || 0, 0),
     });
 
+    if (req.user) {
+      const trackIds = tracks.map((t) => t.id);
+      const userLikes = await Like.findAll({
+        where: { userId: req.user.id, trackId: { [Op.in]: trackIds } },
+        attributes: ['trackId'],
+      });
+      const likedIds = new Set(userLikes.map((l) => l.trackId));
+      tracks.forEach((t: any) => { t.isLiked = likedIds.has(t.id); });
+    }
+
     res.json(tracks);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -64,6 +74,16 @@ router.get('/popular', optionalAuth, async (req: AuthRequest, res: Response) => 
       limit: 50,
     });
 
+    if (req.user) {
+      const trackIds = tracks.map((t) => t.id);
+      const userLikes = await Like.findAll({
+        where: { userId: req.user.id, trackId: { [Op.in]: trackIds } },
+        attributes: ['trackId'],
+      });
+      const likedIds = new Set(userLikes.map((l) => l.trackId));
+      tracks.forEach((t: any) => { t.isLiked = likedIds.has(t.id); });
+    }
+
     res.json(tracks);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -80,6 +100,16 @@ router.get('/recent', optionalAuth, async (req: AuthRequest, res: Response) => {
       order: [['createdAt', 'DESC']],
       limit: 50,
     });
+
+    if (req.user) {
+      const trackIds = tracks.map((t) => t.id);
+      const userLikes = await Like.findAll({
+        where: { userId: req.user.id, trackId: { [Op.in]: trackIds } },
+        attributes: ['trackId'],
+      });
+      const likedIds = new Set(userLikes.map((l) => l.trackId));
+      tracks.forEach((t: any) => { t.isLiked = likedIds.has(t.id); });
+    }
 
     res.json(tracks);
   } catch (error: any) {
