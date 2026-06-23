@@ -3,33 +3,23 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { search as searchApi } from '../services';
 import { Track } from '../types';
 import TrackCard from '../components/TrackCard';
-import { FiCpu } from 'react-icons/fi';
 
 const Search: React.FC = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
-  const [semanticMode, setSemanticMode] = React.useState(false);
   const [results, setResults] = React.useState<any>({});
-  const [semanticResults, setSemanticResults] = React.useState<Track[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<'tracks' | 'artists' | 'playlists'>('tracks');
 
   React.useEffect(() => {
     if (query) {
       setLoading(true);
-      if (semanticMode) {
-        searchApi.semantic(query)
-          .then(setSemanticResults)
-          .catch(() => setSemanticResults([]))
-          .finally(() => setLoading(false));
-      } else {
-        searchApi.search(query)
-          .then(setResults)
-          .catch(() => {})
-          .finally(() => setLoading(false));
-      }
+      searchApi.search(query)
+        .then(setResults)
+        .catch(() => {})
+        .finally(() => setLoading(false));
     }
-  }, [query, semanticMode]);
+  }, [query]);
 
   if (!query) {
     return (
@@ -37,7 +27,7 @@ const Search: React.FC = () => {
         <div className="search-empty">
           <h2>Поиск в Wavve</h2>
           <p>Найдите любимые треки, артистов и плейлисты</p>
-          <p className="search-hint">Попробуйте: «грустная песня о любви», «дружба», «смысл жизни»</p>
+          <p className="search-hint">Попробуйте: «природа», «любовь», «энергия», «романтика»</p>
         </div>
       </div>
     );
@@ -46,52 +36,23 @@ const Search: React.FC = () => {
   return (
     <div className="search-page">
       <div className="search-header">
-        <h1>{semanticMode ? 'Поиск по смыслу' : 'Результаты поиска'}: «{query}»</h1>
-        <div className="semantic-toggle">
-          <button
-            className={`toggle-btn ${semanticMode ? 'active' : ''}`}
-            onClick={() => setSemanticMode(!semanticMode)}
-            title="Поиск по смыслу текста песни"
-          >
-            <FiCpu size={16} />
-            <span>Поиск по смыслу</span>
-          </button>
-        </div>
+        <h1>Результаты поиска: «{query}»</h1>
       </div>
 
-      {semanticMode && (
-        <div className="semantic-info">
-          <FiCpu size={14} />
-          <span>Анализ тематики: система ищет песни, текст которых соответствует вашему запросу по смыслу</span>
-        </div>
-      )}
-
-      {!semanticMode && (
-        <div className="search-tabs">
-          <button className={`tab ${activeTab === 'tracks' ? 'active' : ''}`} onClick={() => setActiveTab('tracks')}>
-            Треки ({results.tracks?.length || 0})
-          </button>
-          <button className={`tab ${activeTab === 'artists' ? 'active' : ''}`} onClick={() => setActiveTab('artists')}>
-            Артисты ({results.artists?.length || 0})
-          </button>
-          <button className={`tab ${activeTab === 'playlists' ? 'active' : ''}`} onClick={() => setActiveTab('playlists')}>
-            Плейлисты ({results.playlists?.length || 0})
-          </button>
-        </div>
-      )}
+      <div className="search-tabs">
+        <button className={`tab ${activeTab === 'tracks' ? 'active' : ''}`} onClick={() => setActiveTab('tracks')}>
+          Треки ({results.tracks?.length || 0})
+        </button>
+        <button className={`tab ${activeTab === 'artists' ? 'active' : ''}`} onClick={() => setActiveTab('artists')}>
+          Артисты ({results.artists?.length || 0})
+        </button>
+        <button className={`tab ${activeTab === 'playlists' ? 'active' : ''}`} onClick={() => setActiveTab('playlists')}>
+          Плейлисты ({results.playlists?.length || 0})
+        </button>
+      </div>
 
       {loading ? (
         <div className="loading">Поиск...</div>
-      ) : semanticMode ? (
-        <div className="tracks-grid">
-          {semanticResults.length > 0 ? (
-            semanticResults.map((track) => (
-              <TrackCard key={track.id} track={track} tracks={semanticResults} />
-            ))
-          ) : (
-            <p className="no-data">Ничего не найдено по этому запросу. Попробуйте другие ключевые слова.</p>
-          )}
-        </div>
       ) : (
         <div className="search-results">
           {activeTab === 'tracks' && (
