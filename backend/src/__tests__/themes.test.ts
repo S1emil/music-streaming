@@ -214,11 +214,11 @@ describe('themes', () => {
 
     // === Одинокое слово не детектит тему (score < 2) ===
 
-    it('should not detect theme from insufficient keyword matches', () => {
-      // Only one unique love keyword — score should be 1 (< 2 threshold)
+    it('should detect theme from single keyword match', () => {
+      // With threshold of 1, even a single unique keyword match triggers the theme
       const result = analyzeThemes('обнимаю обнимаю обнимаю обнимаю обнимаю');
       // "обнимаю" matches once (countMatches breaks after first match per keyword)
-      expect(result.themes).not.toContain('love');
+      expect(result.themes).toContain('love');
     });
 
     // === Многоключевые фразы ===

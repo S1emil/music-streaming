@@ -11,6 +11,7 @@ class Playlist extends Model {
   declare userId: string;
   declare isPublic: boolean;
   declare isCollaborative: boolean;
+  declare isSystem: boolean;
   declare createdAt: Date;
   declare updatedAt: Date;
 
@@ -47,6 +48,10 @@ Playlist.init(
       defaultValue: true,
     },
     isCollaborative: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    isSystem: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },

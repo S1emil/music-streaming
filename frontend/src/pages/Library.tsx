@@ -5,12 +5,15 @@ import { usePlaylists } from '../hooks/usePlaylists';
 import PlaylistCard from '../components/PlaylistCard';
 import { playlists as playlistsApi } from '../services';
 import toast from 'react-hot-toast';
-import { FiPlus } from 'react-icons/fi';
+import { FiPlus, FiHeart } from 'react-icons/fi';
 
 const Library: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { data: playlists, loading: playlistsLoading } = usePlaylists('my');
+
+  const likedPlaylist = playlists.find((p: any) => p.isSystem);
+  const userPlaylists = playlists.filter((p: any) => !p.isSystem);
 
   const handleCreatePlaylist = async () => {
     try {
@@ -47,16 +50,30 @@ const Library: React.FC = () => {
         </button>
       </div>
 
+      {likedPlaylist && (
+        <section className="library-section">
+          <Link to={`/playlist/${likedPlaylist.id}`} className="liked-songs-card">
+            <div className="liked-songs-icon">
+              <FiHeart size={24} />
+            </div>
+            <div className="liked-songs-info">
+              <div className="liked-songs-name">Понравившиеся</div>
+              <div className="liked-songs-count">{likedPlaylist.Tracks?.length || 0} треков</div>
+            </div>
+          </Link>
+        </section>
+      )}
+
       <section className="library-section">
         <h2>Плейлисты</h2>
         {playlistsLoading ? (
           <div className="loading">Загрузка плейлистов...</div>
         ) : (
           <div className="playlists-grid">
-            {playlists.map((playlist) => (
+            {userPlaylists.map((playlist) => (
               <PlaylistCard key={playlist.id} playlist={playlist} />
             ))}
-            {playlists.length === 0 && (
+            {userPlaylists.length === 0 && (
               <p className="no-data">Пока нет плейлистов. Создайте первый!</p>
             )}
           </div>

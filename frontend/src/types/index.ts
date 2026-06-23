@@ -63,6 +63,7 @@ export interface Playlist {
   userId: string;
   isPublic: boolean;
   isCollaborative: boolean;
+  isSystem: boolean;
   createdAt: string;
   Owner?: { id: string; username: string; displayName: string };
   Tracks?: Track[];

@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import { AuthRequest, authenticate, optionalAuth, requireRole } from '../middleware/auth';
 import { uploadMusic, uploadCover } from '../middleware/upload';
-import { Track, Artist, Genre, Album, Like, PlayHistory, User, TrackGenre } from '../models';
+import { Track, Artist, Genre, Album, Like, PlayHistory, User, TrackGenre, Playlist, PlaylistTrack } from '../models';
 import { Op } from 'sequelize';
 import sequelize from '../db/connection';
 import { fetchLyricsBySearch } from '../services/lyrics';
@@ -318,14 +318,37 @@ router.post('/:id/like', authenticate, async (req: AuthRequest, res: Response) =
         transaction: t,
       });
 
+      const likedPlaylist = await Playlist.findOne({
+        where: { userId: req.user!.id, isSystem: true },
+        transaction: t,
+      });
+
       if (existingLike) {
         await existingLike.destroy({ transaction: t });
         await Track.decrement('likes', { where: { id: track.id }, transaction: t });
+        if (likedPlaylist) {
+          await PlaylistTrack.destroy({
+            where: { playlistId: likedPlaylist.id, trackId: track.id },
+            transaction: t,
+          });
+        }
         await track.reload({ transaction: t });
         return { liked: false, likes: track.likes };
       } else {
         await Like.create({ userId: req.user!.id, trackId: track.id }, { transaction: t });
         await Track.increment('likes', { where: { id: track.id }, transaction: t });
+        if (likedPlaylist) {
+          const existing = await PlaylistTrack.findOne({
+            where: { playlistId: likedPlaylist.id, trackId: track.id },
+            transaction: t,
+          });
+          if (!existing) {
+            await PlaylistTrack.create({
+              playlistId: likedPlaylist.id,
+              trackId: track.id,
+            }, { transaction: t });
+          }
+        }
         await track.reload({ transaction: t });
         return { liked: true, likes: track.likes };
       }

@@ -1134,6 +1134,50 @@ img {
   font-size: 20px;
 }
 
+.liked-songs-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #450af5, #c4efd9);
+  border-radius: 12px;
+  text-decoration: none;
+  color: white;
+  margin-bottom: 16px;
+  transition: transform var(--transition-fast);
+}
+
+.liked-songs-card:hover {
+  transform: scale(1.01);
+}
+
+.liked-songs-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.liked-songs-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.liked-songs-name {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.liked-songs-count {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
 .tracks-list {
   display: flex;
   flex-direction: column;
@@ -1235,6 +1279,13 @@ img {
 .profile-avatar {
   flex-shrink: 0;
   position: relative;
+}
+
+.profile-avatar img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .avatar-upload-btn {

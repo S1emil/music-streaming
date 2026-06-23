@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { AuthRequest, authenticate } from '../middleware/auth';
 import { uploadAvatar } from '../middleware/upload';
 import User from '../models/User';
+import Playlist from '../models/Playlist';
 
 const router = Router();
 
@@ -32,6 +33,13 @@ router.post('/register', async (req: AuthRequest, res: Response) => {
 
     const role = req.body.role === 'artist' ? 'artist' : 'user';
     const user = await User.create({ username, email, password, displayName, role });
+
+    await Playlist.create({
+      name: 'Понравившиеся',
+      userId: user.id,
+      isPublic: false,
+      isSystem: true,
+    });
 
     const token = jwt.sign(
       { id: user.id, username: user.username, email: user.email, role: user.role },

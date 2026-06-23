@@ -176,6 +176,10 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Playlist not found' });
     }
 
+    if (playlist.isSystem) {
+      return res.status(403).json({ error: 'Cannot delete system playlist' });
+    }
+
     if (playlist.userId !== req.user!.id) {
       return res.status(403).json({ error: 'Access denied' });
     }

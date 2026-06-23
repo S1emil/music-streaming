@@ -134,7 +134,7 @@ const PlaylistDetail: React.FC = () => {
         <button className="btn btn-primary" onClick={handlePlayAll}>
           <FiPlay size={18} /> Воспроизвести все
         </button>
-        {isOwner && (
+        {isOwner && !playlist.isSystem && (
           <>
             <button className="btn btn-outline" onClick={() => setEditing(true)}>
               <FiEdit2 size={18} /> Редактировать
@@ -151,7 +151,7 @@ const PlaylistDetail: React.FC = () => {
           playlist.Tracks.map((track, index) => (
             <div key={track.id} className="playlist-track-item">
               <TrackCard track={track} showIndex index={index} />
-              {isOwner && (
+              {isOwner && !playlist.isSystem && (
                 <button
                   className="btn btn-icon"
                   onClick={() => handleRemoveTrack(track.id)}
