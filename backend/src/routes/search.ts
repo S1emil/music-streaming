@@ -4,6 +4,7 @@ import { Track, Artist, Genre, Album, User, Playlist, PlayHistory, TrackGenre, L
 import { Op, literal } from 'sequelize';
 import { getHybridRecommendations, getSimilarTracks, getSVDModel } from '../services/recommendations';
 import { buildSearchVector, semanticScore } from '../services/themes';
+import { analyzeThemes } from '../services/themes';
 
 const router = Router();
 
@@ -30,13 +31,39 @@ router.get('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         trackWhere[Op.or].push({ artistId: { [Op.in]: artistIds } });
       }
 
-      results.tracks = await Track.findAll({
+      let tracks = await Track.findAll({
         where: trackWhere,
         include: [
           { model: Artist, as: 'Artist', attributes: ['id', 'name', 'image'] },
+          { model: Genre, as: 'Genre', attributes: ['id', 'name', 'slug'] },
         ],
         limit: 20,
       });
+
+      const titleArtistIds = new Set(tracks.map((t: any) => t.id));
+
+      const searchWords = buildSearchVector(q as string);
+      const themeTracks = await Track.findAll({
+        where: { themes: { [Op.ne]: null } },
+        include: [
+          { model: Artist, as: 'Artist', attributes: ['id', 'name', 'image'] },
+          { model: Genre, as: 'Genre', attributes: ['id', 'name', 'slug'] },
+        ],
+        limit: 200,
+      });
+
+      for (const track of themeTracks) {
+        if (titleArtistIds.has(track.id)) continue;
+        const trackThemes = (track as any).themes || [];
+        const trackMood = (track as any).mood || '';
+        const score = semanticScore(trackThemes, trackMood, searchWords);
+        if (score > 0) {
+          tracks.push(track as any);
+        }
+      }
+
+      tracks = tracks.slice(0, 20);
+      results.tracks = tracks;
     }
 
     if (type === 'all' || type === 'artists') {

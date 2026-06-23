@@ -5,25 +5,25 @@ interface ThemeResult {
 }
 
 const THEME_KEYWORDS: Record<string, string[]> = {
-  'love': ['любовь', 'люблю', 'любишь', 'влюблён', 'влюблена', 'любимый', 'любимая', 'обнимаю', 'обнять', 'поцелуй', 'обниму', 'heart', 'love', 'kiss', 'embrace', 'adore', 'devoted'],
-  'breakup': ['расставание', 'прощай', 'уходишь', 'уходи', 'уходила', 'уходил', 'рассталась', 'расстался', 'broken', 'goodbye', 'leave', 'left', 'gone', 'walk away'],
-  'friendship': ['друг', 'друзья', 'дружба', 'дружим', 'побратим', 'команда', 'брат', 'братан', 'братишка', 'bro', 'friend', 'friends', 'friendship', 'together', 'buddy', 'pal'],
-  'sadness': ['грустно', 'грусть', 'печаль', 'печально', 'тоскую', 'тоска', 'печалит', 'грустный', 'грустная', 'sad', 'sorrow', 'sorrowful', 'unhappy', 'melancholy', 'blue'],
-  'joy': ['радость', 'счастье', 'счастлив', 'счастлива', 'весело', 'веселье', 'улыбка', 'улыбнись', 'праздник', 'happy', 'joy', 'joyful', 'smile', 'celebrate', 'cheerful'],
-  'life': ['жизнь', 'жить', 'смысл', 'смысл жизни', 'путь', 'судьба', 'бытие', 'existence', 'meaning', 'life', 'living', 'destiny', 'fate', 'purpose'],
-  'freedom': ['свобода', 'свободен', 'свободна', 'свободная', 'полёт', 'крылья', 'лететь', '自由', 'freedom', 'free', 'liberty', 'fly', 'wings', 'unbound'],
-  'city': ['город', 'улица', 'улицы', 'проспект', 'переулок', 'метрополитен', 'city', 'urban', 'street', 'downtown', 'avenue', 'boulevard'],
-  'nature': ['море', 'океан', 'река', 'гора', 'горы', 'лес', 'поле', 'цветок', 'ветер', 'небо', 'звезда', 'луна', 'рассвет', 'закат', 'sea', 'ocean', 'mountain', 'forest', 'river', 'sunset', 'sunrise', 'moon', 'stars', 'wind'],
-  'nostalgia': ['ностальгия', 'вспоминаю', 'воспоминание', 'воспоминания', 'детство', 'прошлое', 'когда-то', 'бывало', 'было', 'nostalgia', 'remember', 'memories', 'past', 'childhood', '回忆'],
-  'melancholy': ['туман', 'туманный', 'серый', 'серость', 'пустота', 'пустой', 'одинок', 'одиноко', 'одинокий', 'одинокая', 'забыть', 'забыл', 'забыла', 'fog', 'grey', 'gray', 'empty', 'alone', 'lonely', 'silence', 'silent'],
-  'hope': ['надежда', 'надежды', 'верю', 'поверю', 'надеюсь', 'завтра', 'будущее', 'рассвет', 'утро', 'hope', 'believe', 'tomorrow', 'dawn', 'morning', 'promising'],
-  'anxiety': ['тревога', 'тревожно', 'страх', 'страшно', 'паника', 'беспокойство', 'тревожит', 'anxiety', 'fear', 'afraid', 'worried', 'panic', 'dread'],
-  'loneliness': ['один', 'одна', 'одинокий', 'одинокая', 'одиноко', 'одиночество', 'без тебя', 'без него', 'без неё', 'alone', 'lonely', 'solitary', 'by myself', 'nobody'],
-  'passion': ['страсть', 'страсти', 'жар', 'гореть', 'пламя', 'огонь', 'пыл', 'passion', 'desire', 'burn', 'fire', 'flame', 'hot', 'intense'],
-  'protest': ['борьба', 'против', 'восстание', 'бунт', 'голос', 'правда', 'воля', 'революция', 'fight', 'rebel', 'rebellion', 'protest', 'revolution', 'voice', 'resist'],
-  'self_discovery': ['я', 'себя', 'сам', 'сама', 'кто я', 'познать', 'понять себя', 'внутри', 'self', 'myself', 'who am i', 'within', 'inside', 'discover'],
-  'secret': ['секрет', 'тайна', 'скрытый', 'спрятал', 'спрятала', '隐藏', 'secret', 'mystery', 'hidden', 'conceal', 'mysterious'],
-  'time': ['время', 'времени', 'минута', 'секунда', 'час', 'день', 'год', 'лето', 'зима', 'осень', 'весна', 'time', 'moment', 'second', 'minute', 'hour', 'day', 'year', 'season'],
+  'love': ['любовь', 'люблю', 'любишь', 'влюблён', 'влюблена', 'любимый', 'любимая', 'обнимаю', 'обнять', 'поцелуй', 'обниму', 'сердце', 'душ', 'душу', 'сердца', 'heart', 'love', 'kiss', 'embrace', 'adore', 'devoted', 'romantic', 'romance'],
+  'breakup': ['расставание', 'прощай', 'уходишь', 'уходи', 'уходила', 'уходил', 'рассталась', 'расстался', 'развод', 'расстались', 'broken', 'goodbye', 'leave', 'left', 'gone', 'walk away', 'break up', 'separate'],
+  'friendship': ['друг', 'друзья', 'дружба', 'дружим', 'побратим', 'команда', 'брат', 'братан', 'братишка', 'семья', 'родные', 'bro', 'friend', 'friends', 'friendship', 'together', 'buddy', 'pal', 'family'],
+  'sadness': ['грустно', 'грусть', 'печаль', 'печально', 'тоскую', 'тоска', 'печалит', 'грустный', 'грустная', 'слёзы', 'слезы', 'плач', 'плачу', 'горе', 'боль', 'больно', 'уныл', 'тосклив', 'печальн', 'sad', 'sorrow', 'sorrowful', 'unhappy', 'melancholy', 'blue', 'cry', 'tears', 'pain', 'hurt'],
+  'joy': ['радость', 'счастье', 'счастлив', 'счастлива', 'весело', 'веселье', 'улыбка', 'улыбнись', 'праздник', 'смех', 'смеяться', 'ликующ', 'весёл', 'радостн', 'happy', 'joy', 'joyful', 'smile', 'celebrate', 'cheerful', 'fun', 'laugh', 'party'],
+  'life': ['жизнь', 'жить', 'смысл', 'смысл жизни', 'путь', 'судьба', 'бытие', 'существован', 'прожить', 'прожил', 'дожить', 'living', 'existence', 'meaning', 'life', 'destiny', 'fate', 'purpose', 'alive', 'survive'],
+  'freedom': ['свобода', 'свободен', 'свободна', 'свободная', 'полёт', 'полет', 'крылья', 'крыльях', 'лететь', 'лети', 'улететь', 'раскрепощён', 'независим', 'вольн', 'freedom', 'free', 'liberty', 'fly', 'wings', 'unbound', 'liberated', 'independent'],
+  'city': ['город', 'городе', 'улица', 'улицы', 'улицам', 'проспект', 'переулок', 'метро', 'метropolitan', 'квартал', 'район', 'district', 'city', 'urban', 'street', 'downtown', 'avenue', 'boulevard'],
+  'nature': ['природ', 'море', 'океан', 'река', 'реки', 'гора', 'горы', 'горах', 'лес', 'леса', 'поле', 'поля', 'цветок', 'цветы', 'ветер', 'ветра', 'небо', 'неба', 'звезда', 'звезды', 'луна', 'луны', 'рассвет', 'рассвета', 'закат', 'заката', 'солнце', 'солнца', 'дождь', 'дождя', 'снег', 'снега', 'облак', 'трав', 'свет', 'sea', 'ocean', 'mountain', 'forest', 'river', 'sunset', 'sunrise', 'moon', 'stars', 'wind', 'rain', 'snow', 'sun', 'sky', 'cloud', 'flower', 'tree', 'garden', 'field'],
+  'nostalgia': ['ностальгия', 'ностальгию', 'ностальги', 'вспоминаю', 'воспоминание', 'воспоминания', 'детство', 'прошлое', 'прошлом', 'когда-то', 'бывало', 'было', 'когда то', 'прежн', 'бывш', 'nostalgia', 'remember', 'memories', 'memories', 'past', 'childhood', 'remembering', 'reminisce'],
+  'melancholy': ['туман', 'туманн', 'серый', 'серость', 'пустот', 'пустын', 'одинок', 'одиноко', 'одинокий', 'одинокая', 'мрачн', 'хмур', 'забыть', 'забыл', 'забыла', 'forgotten', 'forgotten', 'fog', 'grey', 'gray', 'empty', 'alone', 'lonely', 'silence', 'silent', 'dark', 'gloomy', 'desolate'],
+  'hope': ['надежд', 'надеюсь', 'поверю', 'завтра', 'будущее', 'будущем', 'рассвет', 'рассвета', 'утро', 'утра', 'верю', 'стремл', 'мечта', 'мечтаю', 'hope', 'believe', 'tomorrow', 'dawn', 'morning', 'promising', 'dream', 'wish', 'believe'],
+  'anxiety': ['тревог', 'тревожно', 'тревожит', 'страх', 'страшно', 'паник', 'беспокойств', 'боятся', 'боюсь', 'боишься', 'тревожн', 'anxiety', 'fear', 'afraid', 'worried', 'panic', 'dread', 'worried', 'nervous'],
+  'loneliness': ['один', 'одна', 'одинокий', 'одинокая', 'одиноко', 'одиночеств', 'без тебя', 'без него', 'без неё', 'без вас', 'покинут', 'заброш', 'уединён', 'abandoned', 'alone', 'lonely', 'solitary', 'by myself', 'nobody', 'isolated', 'deserted'],
+  'passion': ['страст', 'жар', 'горет', 'горишь', 'горим', 'пламя', 'пламени', 'огонь', 'огня', 'пыл', 'пыла', 'жгуч', 'обжига', 'burn', 'fire', 'flame', 'hot', 'intense', 'passion', 'desire', 'blaze'],
+  'protest': ['борьба', 'бороться', 'против', 'восстани', 'бунт', 'бунту', 'голос', 'голоса', 'голосом', 'правда', 'правду', 'воля', 'волю', 'революци', 'изменить', 'fight', 'rebel', 'rebellion', 'protest', 'revolution', 'voice', 'resist', 'stand up'],
+  'self_discovery': ['кто я', 'я сам', 'я сама', 'познать', 'понять себя', 'внутри', 'внутрь', 'осознан', 'пробужден', 'проснуть', 'self', 'myself', 'who am i', 'within', 'inside', 'discover', 'awakening', 'realize'],
+  'secret': ['секрет', 'тайна', 'тайну', 'тайны', 'скрыт', 'спрятал', 'спрятала', 'загадк', 'мистик', 'неизвестн', 'загадочн', 'secret', 'mystery', 'hidden', 'conceal', 'mysterious', 'enigma', 'unknown'],
+  'time': ['время', 'времени', 'минут', 'минуту', 'секунд', 'секунду', 'час', 'часа', 'день', 'дня', 'год', 'года', 'лето', 'лета', 'зиму', 'зимы', 'осень', 'осени', 'весна', 'весны', 'прошл', 'будущ', 'настоящ', 'time', 'moment', 'second', 'minute', 'hour', 'day', 'year', 'season', 'clock', 'eternity'],
 };
 
 const MOOD_KEYWORDS: Record<string, string[]> = {
@@ -36,16 +36,24 @@ const MOOD_KEYWORDS: Record<string, string[]> = {
 };
 
 const SYNONYM_GROUPS: Record<string, string[]> = {
-  'sadness': ['печаль', 'тоска', 'уныние', 'меланхолия', 'горе', 'слёзы', 'грустно', 'грустный', 'печальный', 'тоскливый', 'унылый', 'sad', 'sorrow', 'melancholy', 'grief', 'unhappy', 'blue'],
-  'joy': ['счастье', 'веселье', 'весело', 'ликование', 'восторг', 'улыбка', 'смех', 'весёлый', 'радостный', 'счастливый', 'happy', 'joy', 'cheerful', 'delight', 'pleasure', 'fun'],
-  'love': ['влюблённость', 'романтика', 'нежность', 'страсть', 'обожание', 'привязанность', 'сердце', 'love', 'romance', 'passion', 'affection', 'devotion', 'crush'],
-  'loneliness': ['уединение', 'изоляция', 'одинокий', 'покинутость', 'заброшенность', 'одиночество', 'один', 'одна', 'alone', 'lonely', 'solitary', 'isolated', 'abandoned'],
-  'freedom': ['свободный', 'независимость', 'вольный', 'раскрепощённый', 'свобода', 'freedom', 'free', 'liberty', 'independent', 'unbound', 'liberated'],
-  'life': ['существование', 'бытие', 'жизнь', 'жить', 'смысл жизни', 'life', 'existence', 'living', 'being', 'purpose'],
-  'hope': ['вера', 'упование', 'ожидание', 'надежда', 'надеяться', 'hope', 'faith', 'trust', 'belief', 'optimism'],
-  'anxiety': ['страх', 'беспокойство', 'паника', 'опасение', 'тревога', 'тревожно', 'fear', 'anxiety', 'worry', 'panic', 'dread', 'concern'],
-  'secret': ['тайна', 'загадка', 'секрет', 'мистика', 'secret', 'mystery', 'enigma', 'hidden'],
-  'time': ['минута', 'секунда', 'час', 'мгновение', 'момент', 'прошлое', 'будущее', 'time', 'moment', 'instant', 'second', 'minute', 'hour'],
+  'sadness': ['печаль', 'тоска', 'уныние', 'меланхолия', 'горе', 'слёзы', 'грустно', 'грустный', 'печальный', 'тоскливый', 'унылый', 'плач', 'слезы', 'боль', 'больно', 'страдан', 'sad', 'sorrow', 'melancholy', 'grief', 'unhappy', 'blue', 'cry', 'tears', 'pain'],
+  'joy': ['счастье', 'веселье', 'весело', 'ликование', 'восторг', 'улыбка', 'смех', 'весёлый', 'радостный', 'счастливый', 'праздник', 'радость', 'happy', 'joy', 'cheerful', 'delight', 'pleasure', 'fun', 'smile', 'laugh', 'party', 'celebrate'],
+  'love': ['любовь', 'влюблённость', 'романтика', 'нежность', 'страсть', 'обожание', 'привязанность', 'сердце', 'обнимаю', 'обнять', 'поцелуй', 'люблю', 'любимый', 'любимая', 'влюблён', 'влюблена', 'love', 'romance', 'passion', 'affection', 'devotion', 'crush', 'kiss', 'embrace', 'heart'],
+  'loneliness': ['уединение', 'изоляция', 'одинокий', 'одинокая', 'одиноко', 'покинутость', 'заброшенность', 'одиночество', 'один', 'одна', 'без тебя', 'без него', 'без неё', 'alone', 'lonely', 'solitary', 'isolated', 'abandoned', 'nobody'],
+  'freedom': ['свобода', 'свободный', 'свободен', 'свободна', 'независимость', 'вольный', 'раскрепощённый', 'полёт', 'крылья', 'лететь', 'вольн', 'freedom', 'free', 'liberty', 'independent', 'unbound', 'liberated', 'fly', 'wings'],
+  'life': ['жизнь', 'существование', 'бытие', 'жить', 'смысл жизни', 'судьба', 'путь', 'прожить', 'life', 'existence', 'living', 'being', 'purpose', 'destiny', 'fate', 'alive'],
+  'hope': ['надежда', 'надежды', 'надеюсь', 'вера', 'упование', 'ожидание', 'надеяться', 'верю', 'завтра', 'будущее', 'рассвет', 'утро', 'мечта', 'hope', 'faith', 'trust', 'belief', 'optimism', 'tomorrow', 'dawn', 'believe', 'dream'],
+  'anxiety': ['тревога', 'тревожно', 'тревожит', 'страх', 'страшно', 'паника', 'беспокойство', 'боятся', 'боюсь', 'тревожн', 'fear', 'anxiety', 'worry', 'panic', 'dread', 'concern', 'afraid', 'nervous'],
+  'secret': ['тайна', 'тайну', 'тайны', 'загадка', 'секрет', 'мистика', 'скрытый', 'спрятал', 'спрятала', 'неизвестн', 'загадочн', 'secret', 'mystery', 'enigma', 'hidden', 'mysterious'],
+  'time': ['время', 'времени', 'минута', 'минуту', 'секунда', 'секунду', 'час', 'часа', 'мгновение', 'момент', 'прошлое', 'будущее', 'день', 'дня', 'год', 'года', 'season', 'time', 'moment', 'instant', 'second', 'minute', 'hour', 'clock', 'eternity'],
+  'nature': ['природа', 'природ', 'море', 'океан', 'река', 'реки', 'гора', 'горы', 'лес', 'леса', 'поле', 'поля', 'цветок', 'цветы', 'ветер', 'ветра', 'небо', 'неба', 'звезда', 'звезды', 'луна', 'луны', 'рассвет', 'закат', 'солнце', 'дождь', 'снег', 'облак', 'трав', 'свет', 'sea', 'ocean', 'mountain', 'forest', 'river', 'sunset', 'sunrise', 'moon', 'stars', 'wind', 'rain', 'snow', 'sun', 'sky', 'cloud', 'flower', 'tree', 'garden', 'field', 'nature'],
+  'nostalgia': ['ностальгия', 'ностальги', 'вспоминаю', 'воспоминание', 'воспоминания', 'детство', 'прошлое', 'прошлом', 'когда-то', 'бывало', 'было', 'прежн', 'бывш', 'nostalgia', 'remember', 'memories', 'past', 'childhood', 'reminisce'],
+  'melancholy': ['туман', 'туманн', 'серый', 'серость', 'пустот', 'пустын', 'одинок', 'мрачн', 'хмур', 'забыть', 'забыл', 'забыла', 'forgotten', 'fog', 'grey', 'gray', 'empty', 'dark', 'gloomy', 'desolate', 'silent'],
+  'passion': ['страсть', 'страсти', 'жар', 'горет', 'горишь', 'пламя', 'огонь', 'огня', 'пыл', 'жгуч', 'burn', 'fire', 'flame', 'hot', 'intense', 'passion', 'desire', 'blaze'],
+  'protest': ['борьба', 'бороться', 'против', 'восстание', 'бунт', 'голос', 'голосом', 'правда', 'правду', 'воля', 'волю', 'революци', 'изменить', 'fight', 'rebel', 'rebellion', 'protest', 'revolution', 'voice', 'resist'],
+  'self_discovery': ['кто я', 'я сам', 'я сама', 'познать', 'понять себя', 'внутри', 'осознан', 'пробужден', 'self', 'myself', 'who am i', 'within', 'inside', 'discover', 'awakening'],
+  'city': ['город', 'городе', 'улица', 'улицы', 'улицам', 'проспект', 'переулок', 'метро', 'квартал', 'район', 'city', 'urban', 'street', 'downtown', 'avenue', 'boulevard'],
+  'friendship': ['друг', 'друзья', 'дружба', 'дружим', 'побратим', 'команда', 'брат', 'братан', 'семья', 'родные', 'bro', 'friend', 'friends', 'friendship', 'together', 'buddy', 'family'],
 };
 
 function normalizeText(text: string): string {
@@ -95,7 +103,7 @@ export function analyzeThemes(lyrics: string): ThemeResult {
 
   for (const [theme, keywords] of Object.entries(THEME_KEYWORDS)) {
     const score = countMatches(normalized, keywords);
-    if (score >= 2) {
+    if (score >= 1) {
       themeScores[theme] = score;
     }
   }
@@ -142,6 +150,13 @@ function expandWithSynonyms(words: string[]): string[] {
       if (synonymGroup === word || synonyms.includes(word)) {
         expanded.add(synonymGroup);
         synonyms.forEach((s) => expanded.add(s));
+      }
+      for (const syn of synonyms) {
+        if (syn.length > 3 && (word.startsWith(syn.slice(0, 4)) || syn.startsWith(word.slice(0, 4)))) {
+          expanded.add(synonymGroup);
+          synonyms.forEach((s) => expanded.add(s));
+          break;
+        }
       }
     }
   }
