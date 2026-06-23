@@ -47,7 +47,10 @@ export const PlayerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolumeState] = useState(0.7);
+  const [volume, setVolumeState] = useState(() => {
+    const saved = localStorage.getItem('wavve-volume');
+    return saved !== null ? parseFloat(saved) : 0.7;
+  });
   const [repeat, setRepeat] = useState<'off' | 'one' | 'once'>('off');
   const [shuffle, setShuffle] = useState(false);
   const [showVisualizer, setShowVisualizer] = useState(false);
@@ -233,6 +236,7 @@ export const PlayerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   const setVolume = useCallback((vol: number) => {
     setVolumeState(vol);
+    localStorage.setItem('wavve-volume', vol.toString());
     if (audioRef.current) audioRef.current.volume = vol;
   }, []);
 
